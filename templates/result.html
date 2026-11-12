@@ -1,0 +1,201 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div x-data="{ showModal: false }">
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+        <div>
+            <a href="/" class="text-xl font-black bg-black text-white px-3 py-1 mb-4 inline-flex items-center gap-2 hover:bg-gray-800 transition">
+                <i class="ph-bold ph-arrow-left"></i> KEMBALI
+            </a>
+            <div class="bg-white p-4 border-4 border-black shadow-[8px_8px_0px_#000] inline-block">
+                <h2 class="text-4xl font-black uppercase tracking-tight">HASIL PENJADWALAN</h2>
+                <div class="bg-green-400 border-2 border-black px-2 py-1 inline-flex items-center gap-2 mt-2 font-bold uppercase">
+                    <i class="ph-bold ph-check-circle"></i> OPTIMASI SELESAI
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex gap-3">
+            <a href="/download_pdf" class="bg-pink-400 border-4 border-black px-6 py-4 font-black uppercase shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition flex items-center gap-3 text-lg">
+                <i class="ph-bold ph-printer text-3xl"></i> CETAK PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- SCORE CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        
+        <!-- FITNESS CARD -->
+        <div class="bg-cyan-300 p-8 border-4 border-black shadow-[8px_8px_0px_#000] relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 opacity-20 text-9xl font-black">FIT</div>
+            <p class="font-black text-lg bg-black text-white px-3 py-1 inline-block uppercase">FITNESS SCORE</p>
+            <div class="flex items-end gap-3 mt-4">
+                <p class="text-7xl font-black">{{ fitness }}</p>
+                <span class="text-2xl font-bold border-b-4 border-black pb-1">PTS</span>
+            </div>
+        </div>
+
+        <!-- CONFLICT CARD -->
+        <div 
+            {% if conflicts > 0 %} @click="showModal = true" {% endif %}
+            class="p-8 border-4 border-black shadow-[8px_8px_0px_#000] relative overflow-hidden transition-transform
+            {% if conflicts == 0 %} bg-green-400 
+            {% else %} bg-red-400 cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none hover:bg-red-500 {% endif %}">
+            
+            <div class="absolute -right-4 -top-4 opacity-20 text-9xl font-black">!</div>
+            
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="font-black text-lg bg-black text-white px-3 py-1 inline-block uppercase">SISA KONFLIK</p>
+                    <div class="flex items-end gap-3 mt-4">
+                        <p class="text-7xl font-black">{{ conflicts }}</p>
+                        <span class="text-2xl font-bold border-b-4 border-black pb-1">KONFLIK</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if conflicts > 0 %}
+            <div class="mt-6 bg-white border-4 border-black p-3 font-black uppercase flex items-center gap-2">
+                <i class="ph-bold ph-magnifying-glass text-xl"></i> KLIK UNTUK MELIHAT DETAIL KONFLIK!
+            </div>
+            {% else %}
+            <div class="mt-6 bg-white border-4 border-black p-3 font-black uppercase flex items-center gap-2">
+                <i class="ph-bold ph-fire text-xl"></i> JADWAL SEMPURNA (100% VALID)
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- MODAL ERROR -->
+    {% if conflicts > 0 %}
+    <div x-show="showModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        
+        <div class="absolute inset-0 bg-white/80 backdrop-blur-sm border-black"></div>
+
+        <div class="relative bg-red-400 w-full max-w-2xl border-4 border-black shadow-[12px_12px_0px_#000] flex flex-col max-h-[80vh]">
+            
+            <div class="bg-white px-6 py-4 border-b-4 border-black flex justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-black uppercase flex items-center gap-2"><i class="ph-bold ph-warning-circle"></i> DAFTAR KONFLIK</h3>
+                    <p class="bg-black text-white inline-block px-2 py-0.5 text-sm font-bold mt-1">{{ conflicts }} MASALAH</p>
+                </div>
+                <button @click="showModal = false" class="text-3xl font-black hover:scale-125"><i class="ph-bold ph-x"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto bg-yellow-100">
+                <ul class="space-y-4">
+                    {% for log in logs %}
+                    <li class="bg-white p-4 border-4 border-black shadow-[4px_4px_0px_#000] flex items-start gap-4">
+                        
+                        <div class="w-12 h-12 border-4 border-black flex-shrink-0 flex items-center justify-center text-xl font-black
+                            {% if 'DOSEN' in log %} bg-pink-300
+                            {% elif 'RUANGAN' in log %} bg-orange-300
+                            {% elif 'KAPASITAS' in log %} bg-yellow-300
+                            {% elif 'SALAH RUANG' in log %} bg-purple-300
+                            {% else %} bg-gray-300 {% endif %}">
+                            !
+                        </div>
+
+                        <div class="flex-1">
+                            {% if ':' in log %}
+                                {% set parts = log.split(':', 1) %}
+                                <p class="font-black uppercase bg-black text-white inline-block px-2 py-0.5 text-sm mb-1">
+                                    {{ parts[0] }}
+                                </p>
+                                <p class="font-bold text-lg">{{ parts[1] }}</p>
+                            {% else %}
+                                <p class="font-bold text-lg">{{ log }}</p>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="bg-white p-4 border-t-4 border-black flex justify-end">
+                <button @click="showModal = false" class="bg-black text-white px-8 py-3 font-black uppercase hover:bg-gray-800 active:translate-y-1">TUTUP</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SEARCH BOX -->
+    <div class="mb-8 relative">
+        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-black"></i>
+        <input type="text" id="searchBox" placeholder="CARI DOSEN, RUANGAN, ATAU MATKUL..." 
+            class="w-full bg-white border-4 border-black pl-12 pr-4 py-4 text-xl font-black uppercase shadow-[6px_6px_0px_#000] focus:outline-none focus:bg-yellow-100">
+    </div>
+
+    <!-- SCHEDULE TABLE -->
+    <div class="bg-white border-4 border-black shadow-[12px_12px_0px_#000] overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left font-bold border-collapse">
+                <thead class="bg-black text-white uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-4 border-r-2 border-white">WAKTU</th>
+                        <th class="px-6 py-4 border-r-2 border-white">RUANGAN</th>
+                        <th class="px-6 py-4 border-r-2 border-white">MATA KULIAH</th>
+                        <th class="px-6 py-4 border-r-2 border-white">DOSEN</th>
+                        <th class="px-6 py-4">FAKULTAS</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody" class="divide-y-4 divide-black">
+                    {% for row in schedule|sort(attribute='assigned_time') %}
+                    <tr class="hover:bg-cyan-100">
+                        <td class="px-6 py-4 border-r-4 border-black whitespace-nowrap">
+                            <div class="font-black text-2xl uppercase">{{ row.Hari }}</div>
+                            <div class="bg-black text-white px-2 py-1 inline-block mt-2 font-bold text-sm tracking-widest">
+                                {{ row.Jam }}
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4 border-r-4 border-black">
+                            <div class="font-black text-xl uppercase">{{ row.Nama_Ruangan }}</div>
+                            <div class="flex gap-2 mt-2">
+                                <span class="bg-yellow-300 border-2 border-black px-1 text-xs">KAP: {{ row.Kapasitas_Ruangan }}</span>
+                                <span class="bg-green-300 border-2 border-black px-1 text-xs">MHS: {{ row.Jumlah_Mhs }}</span>
+                            </div>
+                            {% if row.Jenis_MK == 'Laboratorium' %}
+                                <div class="mt-2 inline-block bg-pink-300 border-2 border-black px-2 py-1 text-xs font-black uppercase">LAB</div>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-6 py-4 border-r-4 border-black">
+                            <div class="font-black text-lg uppercase">{{ row.Nama_MK }}</div>
+                            <div class="text-sm font-bold border-t-2 border-black pt-1 mt-1">{{ row.Kode_MK }} | {{ row.SKS }} SKS</div>
+                        </td>
+
+                        <td class="px-6 py-4 border-r-4 border-black">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 border-4 border-black bg-cyan-300 flex items-center justify-center font-black text-xl">
+                                    {{ row.Dosen[:1] }}
+                                </div>
+                                <span class="font-black uppercase text-lg">{{ row.Dosen }}</span>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <span class="border-4 border-black bg-white px-3 py-1 font-black uppercase shadow-[2px_2px_0px_#000]">
+                                {{ row.Fakultas }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('searchBox').addEventListener('keyup', function() {
+        let filter = this.value.toUpperCase();
+        let rows = document.querySelectorAll('#scheduleBody tr');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toUpperCase().includes(filter) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

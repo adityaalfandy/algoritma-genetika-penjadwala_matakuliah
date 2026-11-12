@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penjadwalan Cerdas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        body { font-family: 'Public Sans', sans-serif; }
+        /* Scrollbar kustom Neo Brutalism */
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track { background: #fff; border-left: 2px solid #000; }
+        ::-webkit-scrollbar-thumb { background: #000; border: 2px solid #fff; }
+    </style>
+</head>
+<body class="bg-yellow-300 flex h-screen overflow-hidden text-black font-bold">
+
+    <!-- Hover Expandable Sidebar -->
+    <aside class="group w-20 hover:w-64 transition-all duration-300 relative h-full shrink-0 bg-cyan-300 text-black flex flex-col border-r-4 border-black z-50 overflow-hidden shadow-[8px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-[12px_0px_0px_rgba(0,0,0,0.2)]">
+        
+        <div class="h-16 shrink-0 flex items-center justify-center border-b-4 border-black bg-pink-300 relative overflow-hidden">
+            <!-- Icon S for collapsed state -->
+            <div class="font-black text-3xl uppercase group-hover:opacity-0 transition-opacity absolute">S</div>
+            <!-- Full Title for expanded state -->
+            <div class="text-center w-full px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap absolute">
+                <h1 class="text-xl font-black tracking-widest uppercase truncate">SCHEDULER</h1>
+            </div>
+        </div>
+        
+        <nav class="flex-1 px-3 py-6 space-y-4 overflow-y-auto overflow-x-hidden">
+            
+            <a href="/" title="Dashboard" class="flex items-center px-2 py-3 border-4 border-black font-black uppercase transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none whitespace-nowrap overflow-hidden
+                {% if request.path == '/' %} bg-white shadow-[4px_4px_0px_#000] {% else %} bg-transparent hover:bg-white {% endif %}">
+                <div class="w-10 flex justify-center shrink-0">
+                    <i class="ph-bold ph-squares-four text-3xl"></i>
+                </div>
+                <span class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">Dashboard</span>
+            </a>
+            
+            <a href="/hasil" title="Jadwal" class="flex items-center px-2 py-3 border-4 border-black font-black uppercase transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none whitespace-nowrap overflow-hidden
+                {% if request.path == '/hasil' %} bg-white shadow-[4px_4px_0px_#000] {% else %} bg-transparent hover:bg-white {% endif %}">
+                <div class="w-10 flex justify-center shrink-0">
+                    <i class="ph-bold ph-calendar text-3xl"></i>
+                </div>
+                <span class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">Jadwal</span>
+            </a>
+
+            <a href="/dosen" title="Dosen" class="flex items-center px-2 py-3 border-4 border-black font-black uppercase transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none whitespace-nowrap overflow-hidden
+                {% if request.path == '/dosen' %} bg-white shadow-[4px_4px_0px_#000] {% else %} bg-transparent hover:bg-white {% endif %}">
+                <div class="w-10 flex justify-center shrink-0">
+                    <i class="ph-bold ph-users-three text-3xl"></i>
+                </div>
+                <span class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">Dosen</span>
+            </a>
+
+            <div class="pt-8 relative">
+                <a href="/reset_db" title="Reset Data" onclick="return confirm('Yakin hapus SEMUA data Matkul & Ruangan?')" class="flex items-center px-2 py-3 border-4 border-black bg-red-400 font-black uppercase transition-transform active:translate-x-1 active:translate-y-1 hover:shadow-[4px_4px_0px_#000] whitespace-nowrap overflow-hidden">
+                    <div class="w-10 flex justify-center shrink-0">
+                        <i class="ph-bold ph-trash text-3xl"></i>
+                    </div>
+                    <span class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">Reset Data</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-yellow-300">
+        <header class="h-16 bg-pink-300 border-b-4 border-black flex items-center px-6 z-10 shrink-0 gap-4">
+            <span class="font-black text-2xl uppercase tracking-widest">SMART SCHEDULER</span>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-10 scroll-smooth">
+            <div class="max-w-7xl mx-auto">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mb-8 space-y-4" x-data="{ show: true }" x-show="show">
+                            {% for category, message in messages %}
+                            <div class="p-4 border-4 border-black font-black flex justify-between items-center shadow-[4px_4px_0px_#000]
+                                {% if category == 'error' %} bg-red-400 text-black 
+                                {% else %} bg-green-400 text-black {% endif %}">
+                                <div class="flex items-center gap-3">
+                                    <i class="text-2xl ph-bold {% if category == 'error' %}ph-warning-circle{% else %}ph-check-circle{% endif %}"></i>
+                                    <span class="text-lg uppercase tracking-wide">{{ message }}</span>
+                                </div>
+                                <button @click="show = false" class="text-2xl hover:scale-125 transition"><i class="ph-bold ph-x"></i></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

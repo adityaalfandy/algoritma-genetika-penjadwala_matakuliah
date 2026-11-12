@@ -1,0 +1,304 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div x-data="{ activeTab: 'excel', showGuide: false }">
+
+    <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
+        <div class="bg-white p-4 border-4 border-black shadow-[8px_8px_0px_#000]">
+            <h2 class="text-4xl font-black uppercase tracking-tight">DASHBOARD</h2>
+            <p class="font-bold border-t-2 border-black pt-2 mt-2">SISTEM PENJADWALAN KULIAH</p>
+        </div>
+        
+        <div class="flex gap-4">
+            <button @click="showGuide = true" class="bg-white border-4 border-black px-6 py-3 font-black uppercase transition-transform active:translate-x-1 active:translate-y-1 hover:shadow-[4px_4px_0px_#000] flex items-center gap-2">
+                <i class="ph-bold ph-book-open text-2xl"></i> PANDUAN
+            </button>
+
+            <form action="/run_ga" method="POST" class="h-full">
+                <button class="bg-cyan-400 border-4 border-black px-8 py-3 font-black uppercase text-lg transition-transform active:translate-x-1 active:translate-y-1 shadow-[4px_4px_0px_#000] hover:shadow-[8px_8px_0px_#000] flex items-center gap-2 h-full">
+                    <i class="ph-bold ph-lightning text-2xl"></i> GENERATE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Guide Modal -->
+    <div x-show="showGuide" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-white/80 backdrop-blur-sm border-black"></div>
+
+        <div class="relative bg-pink-300 w-full max-w-4xl border-4 border-black shadow-[12px_12px_0px_#000] flex flex-col max-h-[85vh]">
+            
+            <div class="bg-white px-6 py-4 border-b-4 border-black flex justify-between items-center">
+                <h3 class="text-2xl font-black uppercase flex items-center gap-2"><i class="ph-bold ph-book-open"></i> PANDUAN ISI DATA</h3>
+                <button @click="showGuide = false" class="text-2xl font-black hover:scale-110"><i class="ph-bold ph-x"></i></button>
+            </div>
+
+            <div class="p-4 md:p-8 overflow-y-auto bg-yellow-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_#000]">
+                        <h4 class="font-black text-xl mb-4 uppercase bg-black text-white inline-block px-2 py-1">1. Format Excel</h4>
+                        <ul class="space-y-4 font-bold">
+                            <li class="flex gap-2"><i class="ph-bold ph-warning text-xl text-yellow-500"></i> Wajib format <span class="bg-black text-white px-2 py-1">.xlsx</span></li>
+                            <li class="flex gap-2"><i class="ph-bold ph-warning text-xl text-yellow-500"></i> Wajib 2 Sheet bernama: <br>
+                                <span class="bg-cyan-300 border-2 border-black px-2 py-1 inline-block mt-2">Matkul</span> & 
+                                <span class="bg-pink-300 border-2 border-black px-2 py-1 inline-block mt-2">Ruangan</span>
+                            </li>
+                            <li class="flex gap-2"><i class="ph-bold ph-pencil-simple text-xl"></i> <div>Kolom <b>Jenis_MK</b> isinya hanya: <br>
+                                <span class="bg-green-300 border-2 border-black px-2 py-1">Teori</span> atau <span class="bg-purple-300 border-2 border-black px-2 py-1">Laboratorium</span></div>
+                            </li>
+                            <li class="flex gap-2"><i class="ph-bold ph-clock text-xl"></i> <div>Kolom <b>Waktu_Tersedia</b> pisahkan dengan titik koma. <br>
+                                Contoh: <span class="bg-yellow-300 border-2 border-black px-2 py-1">1;2;3</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_#000] overflow-x-auto">
+                        <h4 class="font-black text-xl mb-4 uppercase bg-black text-white inline-block px-2 py-1">2. KODE SLOT (1-40)</h4>
+                        <table class="w-full text-center border-4 border-black text-sm font-bold min-w-[300px]">
+                            <thead class="bg-black text-white uppercase">
+                                <tr>
+                                    <th class="p-2 border-2 border-black">WAKTU</th>
+                                    <th class="p-2 border-2 border-black">SN</th>
+                                    <th class="p-2 border-2 border-black">SL</th>
+                                    <th class="p-2 border-2 border-black">RB</th>
+                                    <th class="p-2 border-2 border-black">KM</th>
+                                    <th class="p-2 border-2 border-black">JM</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y-2 divide-black">
+                                <tr><td class="p-2 border-r-2 border-black bg-cyan-200">07:00</td><td>1</td><td>9</td><td>17</td><td>25</td><td>33</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-cyan-200">08:40</td><td>2</td><td>10</td><td>18</td><td>26</td><td>34</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-cyan-200">10:20</td><td>3</td><td>11</td><td>19</td><td>27</td><td>35</td></tr>
+                                <tr class="bg-black text-white"><td colspan="6" class="p-2 uppercase tracking-widest">ISTIRAHAT</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-pink-200">13:00</td><td>4</td><td>12</td><td>20</td><td>28</td><td>36</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-pink-200">14:40</td><td>5</td><td>13</td><td>21</td><td>29</td><td>37</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-pink-200">16:20</td><td>6</td><td>14</td><td>22</td><td>30</td><td>38</td></tr>
+                                <tr class="bg-black text-white"><td colspan="6" class="p-2 uppercase tracking-widest">MALAM</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-yellow-200">18:30</td><td>7</td><td>15</td><td>23</td><td>31</td><td>39</td></tr>
+                                <tr><td class="p-2 border-r-2 border-black bg-yellow-200">20:10</td><td>8</td><td>16</td><td>24</td><td>32</td><td>40</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 border-t-4 border-black flex justify-end">
+                <button @click="showGuide = false" class="bg-black text-white px-8 py-3 font-black uppercase hover:bg-gray-800 active:translate-y-1">TUTUP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div class="bg-white p-6 border-4 border-black shadow-[8px_8px_0px_#000] flex items-center gap-6">
+            <div class="w-16 h-16 bg-cyan-300 border-4 border-black flex items-center justify-center text-3xl shadow-[4px_4px_0px_#000]">
+                <i class="ph-bold ph-books"></i>
+            </div>
+            <div>
+                <p class="font-black text-sm uppercase bg-black text-white px-2 py-1 inline-block">MATA KULIAH</p>
+                <p class="text-5xl font-black mt-2">{{ data|length }}</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 border-4 border-black shadow-[8px_8px_0px_#000] flex items-center gap-6">
+            <div class="w-16 h-16 bg-pink-300 border-4 border-black flex items-center justify-center text-3xl shadow-[4px_4px_0px_#000]">
+                <i class="ph-bold ph-buildings"></i>
+            </div>
+            <div>
+                <p class="font-black text-sm uppercase bg-black text-white px-2 py-1 inline-block">RUANGAN</p>
+                <p class="text-5xl font-black mt-2">{{ stats.ruangan }}</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 border-4 border-black shadow-[8px_8px_0px_#000] flex items-center gap-6">
+            <div class="w-16 h-16 bg-green-400 border-4 border-black flex items-center justify-center text-3xl shadow-[4px_4px_0px_#000]">
+                <i class="ph-bold ph-chart-bar"></i>
+            </div>
+            <div>
+                <p class="font-black text-sm uppercase bg-black text-white px-2 py-1 inline-block">TOTAL SKS</p>
+                <p class="text-5xl font-black mt-2">{{ stats.sks }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPLOAD SECTION -->
+    <div class="bg-white border-4 border-black shadow-[12px_12px_0px_#000] mb-12">
+        <div class="flex flex-col md:flex-row border-b-4 border-black bg-gray-100">
+            <button @click="activeTab = 'excel'" 
+                :class="activeTab === 'excel' ? 'bg-cyan-300' : 'bg-transparent hover:bg-white'"
+                class="flex-1 py-4 text-lg font-black border-b-4 md:border-b-0 md:border-r-4 border-black uppercase flex items-center justify-center gap-3">
+                <i class="ph-bold ph-file-xls text-2xl"></i> EXCEL (1 FILE)
+            </button>
+            <button @click="activeTab = 'csv'" 
+                :class="activeTab === 'csv' ? 'bg-pink-300' : 'bg-transparent hover:bg-white'"
+                class="flex-1 py-4 text-lg font-black uppercase flex items-center justify-center gap-3">
+                <i class="ph-bold ph-file-csv text-2xl"></i> CSV (TERPISAH)
+            </button>
+        </div>
+
+        <div class="p-4 md:p-8">
+            <div x-show="activeTab === 'excel'">
+                <div class="flex flex-col md:flex-row gap-4 md:gap-8 justify-between items-center text-center md:text-left">
+                    <div>
+                        <h3 class="font-black text-2xl uppercase bg-black text-white inline-block px-3 py-1 mb-2">UPLOAD EXCEL</h3>
+                        <p class="font-bold text-lg">Wajib ada sheet <span class="bg-cyan-300 px-2 border-2 border-black">Matkul</span> dan <span class="bg-pink-300 px-2 border-2 border-black">Ruangan</span>.</p>
+                    </div>
+                    <a href="/download_template/excel" class="bg-white border-4 border-black px-6 py-3 font-black uppercase shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition flex items-center gap-2">
+                        <i class="ph-bold ph-download-simple text-xl"></i> TEMPLATE
+                    </a>
+                </div>
+                
+                <form action="/" method="POST" enctype="multipart/form-data" class="mt-8 flex flex-col md:flex-row gap-6">
+                    <input type="hidden" name="upload_type" value="excel">
+                    <div class="flex-1 border-4 border-dashed border-black bg-gray-50 p-4 font-bold relative flex items-center">
+                        <input type="file" name="file_excel" class="w-full file:bg-black file:text-white file:border-0 file:px-4 file:py-2 file:font-black file:uppercase file:cursor-pointer" accept=".xlsx" required>
+                    </div>
+                    <button class="bg-green-400 border-4 border-black px-10 py-4 font-black uppercase text-xl shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-upload-simple text-2xl"></i> IMPORT SEKARANG
+                    </button>
+                </form>
+            </div>
+
+            <div x-show="activeTab === 'csv'" style="display: none;">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-cyan-100 p-6 border-4 border-black shadow-[4px_4px_0px_#000]">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-black text-xl uppercase bg-black text-white px-2 py-1">1. CSV MATKUL</h3>
+                            <a href="/download_template/csv_matkul" class="bg-white border-2 border-black font-bold px-3 py-1 text-sm shadow-[2px_2px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none">TEMPLATE</a>
+                        </div>
+                        <form action="/" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
+                            <input type="hidden" name="upload_type" value="csv_matkul">
+                            <input type="file" name="file_csv" class="border-4 border-black bg-white p-2 font-bold file:bg-black file:text-white file:border-0 file:px-3 file:py-1 file:font-bold" accept=".csv" required>
+                            <button class="bg-black text-white py-3 font-black uppercase text-lg hover:bg-gray-800 flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-upload-simple"></i> UPLOAD MATKUL
+                            </button>
+                        </form>
+                    </div>
+                    <div class="bg-pink-100 p-6 border-4 border-black shadow-[4px_4px_0px_#000]">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-black text-xl uppercase bg-black text-white px-2 py-1">2. CSV RUANGAN</h3>
+                            <a href="/download_template/csv_ruangan" class="bg-white border-2 border-black font-bold px-3 py-1 text-sm shadow-[2px_2px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none">TEMPLATE</a>
+                        </div>
+                        <form action="/" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
+                            <input type="hidden" name="upload_type" value="csv_ruangan">
+                            <input type="file" name="file_csv" class="border-4 border-black bg-white p-2 font-bold file:bg-black file:text-white file:border-0 file:px-3 file:py-1 file:font-bold" accept=".csv" required>
+                            <button class="bg-black text-white py-3 font-black uppercase text-lg hover:bg-gray-800 flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-upload-simple"></i> UPLOAD RUANGAN
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW TABLES -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- MATKUL TABLE -->
+        <div class="bg-white border-4 border-black shadow-[8px_8px_0px_#000] flex flex-col h-[500px]">
+            <div class="p-4 border-b-4 border-black bg-cyan-300 flex justify-between items-center">
+                <h3 class="font-black text-xl uppercase">MATKUL PREVIEW</h3>
+                <span class="bg-black text-white px-3 py-1 font-black">{{ data|length }} ITEMS</span>
+            </div>
+            <div class="flex-1 overflow-y-auto bg-white">
+                <table class="w-full text-left font-bold border-collapse">
+                    <thead class="bg-gray-200 uppercase border-b-4 border-black sticky top-0 z-10">
+                        <tr>
+                            <th class="px-4 py-3 border-r-2 border-black">Matkul</th>
+                            <th class="px-4 py-3 border-r-2 border-black">Dosen</th>
+                            <th class="px-4 py-3 border-r-2 border-black text-center">Mhs</th>
+                            <th class="px-4 py-3">Jenis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                        <tr class="border-b-2 border-black hover:bg-cyan-50">
+                            <td class="px-4 py-3 border-r-2 border-black">
+                                <div class="font-black text-lg">{{ row.nama_mk }}</div>
+                                <div class="text-sm bg-black text-white inline-block px-1 mt-1">{{ row.kode_mk }} | {{ row.sks }} SKS</div>
+                            </td>
+                            <td class="px-4 py-3 border-r-2 border-black">{{ row.dosen }}</td>
+                            <td class="px-4 py-3 border-r-2 border-black text-center text-xl font-black">{{ row.jumlah_mhs }}</td>
+                            <td class="px-4 py-3">
+                                {% if row.jenis_mk == 'Laboratorium' %}
+                                    <span class="bg-pink-300 border-2 border-black px-2 py-1 uppercase text-xs">LAB</span>
+                                {% else %}
+                                    <span class="bg-gray-200 border-2 border-black px-2 py-1 uppercase text-xs">TEORI</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not data %}
+                        <tr><td colspan="4" class="p-8 text-center text-xl uppercase italic border-b-2 border-black">KOSONG BOS</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RUANGAN TABLE -->
+        <div class="bg-white border-4 border-black shadow-[8px_8px_0px_#000] flex flex-col h-[500px]">
+            <div class="p-4 border-b-4 border-black bg-pink-300 flex justify-between items-center">
+                <h3 class="font-black text-xl uppercase">RUANGAN PREVIEW</h3>
+                <div class="flex gap-2">
+                    <span class="bg-black text-white px-3 py-1 font-black">{{ rooms|length }} UNIT</span>
+                    {% if rooms %}
+                    <a href="/reset_db" onclick="return confirm('Hapus Data?')" class="bg-red-400 border-2 border-black px-2 py-1 font-black hover:bg-red-500">CLEAR</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto bg-white">
+                <table class="w-full text-left font-bold border-collapse">
+                    <thead class="bg-gray-200 uppercase border-b-4 border-black sticky top-0 z-10">
+                        <tr>
+                            <th class="px-4 py-3 border-r-2 border-black">Nama</th>
+                            <th class="px-4 py-3 border-r-2 border-black text-center">Kapasitas</th>
+                            <th class="px-4 py-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rooms %}
+                        <tr class="border-b-2 border-black hover:bg-pink-50">
+                            <td class="px-4 py-3 border-r-2 border-black">
+                                <div class="font-black text-xl uppercase">{{ r.nama_ruangan }}</div>
+                                <div class="mt-1">
+                                    {% if r.jenis == 'Laboratorium' %}
+                                        <span class="bg-pink-300 border-2 border-black px-2 py-0.5 text-xs uppercase">LAB</span>
+                                    {% else %}
+                                        <span class="bg-cyan-300 border-2 border-black px-2 py-0.5 text-xs uppercase">TEORI</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 border-r-2 border-black text-center text-2xl font-black">{{ r.kapasitas }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <a href="/delete_room/{{ r.id }}" class="bg-red-400 border-2 border-black px-3 py-1 font-black uppercase hover:bg-red-500 shadow-[2px_2px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none">DEL</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not rooms %}
+                        <tr><td colspan="3" class="p-8 text-center text-xl uppercase italic border-b-2 border-black">KOSONG BOS</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LOADING OVERLAY NEO BRUTALISM -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black/80 z-50 hidden flex-col items-center justify-center">
+    <div class="bg-yellow-300 p-8 border-4 border-white shadow-[12px_12px_0px_#fff] flex flex-col items-center max-w-sm text-center">
+        <i class="ph-bold ph-gear text-6xl mb-4 animate-spin block"></i>
+        <h3 class="text-3xl font-black uppercase mb-2">OTAK LAGI MIKIR...</h3>
+        <p class="font-bold border-t-2 border-black pt-2">Jangan ditutup! Algoritma lagi jalan.</p>
+    </div>
+</div>
+
+<script>
+    const forms = document.querySelectorAll('form[action="/run_ga"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+        });
+    });
+</script>
+{% endblock %}

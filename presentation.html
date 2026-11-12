@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposal Proyek Informatika: Sistem Penjadwalan Matakuliah Otomatis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       RESET & BASE THEME VARIABLES
+       Theme: Academic Deep Blue & Warm Cream / University Gold
+       WCAG 2.1 AA Compliant Contrast
+       ========================================================================== */
+    :root {
+      --navy-950: #07111E;
+      --navy-900: #0B192C;
+      --navy-800: #132B4A;
+      --navy-700: #1E3E62;
+      --navy-600: #2E5A88;
+      --cream-50: #FDFBF7;
+      --cream-100: #F7F3E9;
+      --cream-200: #EFE7D5;
+      --cream-300: #DFD3BC;
+      --gold-500: #C5A059;
+      --gold-600: #A88238;
+      --gold-100: #F6EEDD;
+      --charcoal: #182230;
+      --muted: #4B5565;
+      --border-light: rgba(19, 43, 74, 0.12);
+      --border-dark: rgba(247, 243, 233, 0.18);
+      --card-bg: #FFFFFF;
+      --card-shadow: 0 10px 25px -5px rgba(11, 25, 44, 0.08), 0 8px 10px -6px rgba(11, 25, 44, 0.04);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #050C16;
+      color: var(--charcoal);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 0 60px 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top presentation control bar */
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      background: rgba(11, 25, 44, 0.85);
+      backdrop-filter: blur(12px);
+      padding: 10px 24px;
+      border-radius: 40px;
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      color: var(--cream-100);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      z-index: 1000;
+    }
+
+    .deck-btn {
+      background: transparent;
+      border: 1px solid rgba(247, 243, 233, 0.25);
+      color: var(--cream-100);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .deck-btn:hover {
+      background: var(--gold-500);
+      color: var(--navy-950);
+      border-color: var(--gold-500);
+      transform: translateY(-1px);
+    }
+
+    .slide-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold-500);
+      letter-spacing: 0.5px;
+    }
+
+    .deck-viewport {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      align-items: center;
+    }
+
+    /* Rigid Slide Dimensions: 1280px x 720px */
+    .slide-container {
+      width: 1280px;
+      height: 720px;
+      min-width: 1280px;
+      min-height: 720px;
+      max-width: 1280px;
+      max-height: 720px;
+      position: relative;
+      background-color: var(--cream-50);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      page-break-after: always;
+    }
+
+    /* Slide Header */
+    .slide-header {
+      padding: 36px 56px 14px 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      position: relative;
+      z-index: 5;
+    }
+
+    .slide-header.dark {
+      border-bottom-color: var(--border-dark);
+    }
+
+    .header-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--gold-600);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-header.dark .header-tag {
+      color: var(--gold-500);
+    }
+
+    .slide-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--navy-900);
+      line-height: 1.2;
+    }
+
+    .slide-header.dark .slide-title {
+      color: var(--cream-50);
+    }
+
+    .header-badge {
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--cream-200);
+      color: var(--navy-800);
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
+    }
+
+    .slide-header.dark .header-badge {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--cream-200);
+      border-color: var(--border-dark);
+    }
+
+    /* Slide Body Content */
+    .slide-body {
+      flex: 1;
+      padding: 16px 56px 40px 56px;
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Slide Footer watermark */
+    .slide-footer {
+      position: absolute;
+      bottom: 16px;
+      left: 56px;
+      right: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #7E8B9B;
+      border-top: 1px solid rgba(19, 43, 74, 0.08);
+      padding-top: 10px;
+      z-index: 5;
+    }
+
+    .slide-container.theme-dark .slide-footer {
+      border-top-color: rgba(255, 255, 255, 0.08);
+      color: #94A3B8;
+    }
+
+    /* Dark Variant Theme */
+    .slide-container.theme-dark {
+      background-color: var(--navy-900);
+      color: var(--cream-100);
+    }
+
+    /* Subtle background academic decorative elements */
+    .bg-academic-pattern {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 45%;
+      height: 100%;
+      background: radial-gradient(circle at top right, rgba(197, 160, 89, 0.08) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .bg-watermark-crest {
+      position: absolute;
+      bottom: -40px;
+      right: -40px;
+      width: 320px;
+      height: 320px;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ==========================================================================
+       SLIDE-SPECIFIC LAYOUT STYLES
+       ========================================================================== */
+
+    /* --- SLIDE 1: Title Slide --- */
+    .title-slide-wrapper {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      padding: 64px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .title-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-right: 40px;
+    }
+
+    .title-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .title-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(197, 160, 89, 0.15);
+      border: 1px solid var(--gold-500);
+      color: var(--gold-500);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 30px;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .title-h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: var(--cream-50);
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .title-h1 span {
+      color: var(--gold-500);
+    }
+
+    .title-desc {
+      font-size: 17px;
+      color: #CBD5E1;
+      line-height: 1.6;
+      margin-bottom: 36px;
+      max-width: 580px;
+    }
+
+    .title-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .title-meta-item .meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94A3B8;
+      margin-bottom: 3px;
+    }
+
+    .title-meta-item .meta-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--cream-100);
+    }
+
+    .title-hero-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      position: relative;
+    }
+
+    .hero-stat-badge {
+      position: absolute;
+      top: -14px;
+      right: 24px;
+      background: var(--gold-500);
+      color: var(--navy-950);
+      font-weight: 700;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-metric-box {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-metric-box:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold-500);
+    }
+
+    .metric-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cream-100);
+      margin-top: 2px;
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: #94A3B8;
+      margin-top: 4px;
+    }
+
+    /* --- SLIDE 2: Image_Right_Text_Left --- */
+    .img-right-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .context-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: var(--cream-200);
+      color: var(--navy-800);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .lead-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--charcoal);
+      margin-bottom: 18px;
+    }
+
+    .contrast-box-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .contrast-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--navy-700);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .contrast-card.accent {
+      border-left-color: var(--gold-500);
+      background: #FAF8F2;
+    }
+
+    .contrast-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contrast-card p {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .image-frame {
+      height: 100%;
+      max-height: 480px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      border: 1px solid var(--border-light);
+    }
+
+    .image-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-caption-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      background: linear-gradient(transparent, rgba(11, 25, 44, 0.92));
+      color: var(--cream-100);
+      font-size: 12px;
+    }
+
+    .image-caption-overlay strong {
+      color: var(--gold-500);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* --- SLIDE 3: Tiled_Text_With_Icons --- */
+    .tiles-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      height: 100%;
+      align-items: stretch;
+      padding-top: 8px;
+    }
+
+    .tile-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tile-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--navy-700);
+    }
+
+    .tile-card.tile-gold::before {
+      background: var(--gold-500);
+    }
+
+    .tile-card.tile-navy::before {
+      background: var(--navy-900);
+    }
+
+    .tile-card.tile-steel::before {
+      background: var(--navy-600);
+    }
+
+    .tile-icon-bubble {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: var(--cream-100);
+      border: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--navy-800);
+    }
+
+    .tile-card.tile-gold .tile-icon-bubble {
+      background: var(--gold-100);
+      color: var(--gold-600);
+      border-color: rgba(197, 160, 89, 0.3);
+    }
+
+    .tile-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: var(--gold-600);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .tile-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .tile-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+
+    .tile-bullet-list {
+      list-style: none;
+      border-top: 1px dashed var(--border-light);
+      padding-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tile-bullet-list li {
+      font-size: 12px;
+      color: var(--charcoal);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .tile-bullet-list li svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--navy-700);
+    }
+
+    /* --- SLIDE 4: Bleed_Image_Right --- */
+    .bleed-layout {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      height: 100%;
+      margin: -16px -56px -40px -56px;
+    }
+
+    .bleed-content-col {
+      padding: 24px 44px 36px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .bleed-image-col {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .bleed-image-col img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .bleed-image-tint {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, var(--cream-50) 0%, rgba(253, 251, 247, 0) 25%),
+                  linear-gradient(to top, rgba(11, 25, 44, 0.8) 0%, transparent 60%);
+    }
+
+    .bleed-img-tag {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      left: 30px;
+      background: rgba(11, 25, 44, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(197, 160, 89, 0.4);
+      padding: 16px 20px;
+      border-radius: var(--radius-sm);
+      color: var(--cream-100);
+      font-size: 12px;
+    }
+
+    .scope-box-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .scope-box {
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+    }
+
+    .scope-box.in-scope {
+      border-top: 4px solid #10B981;
+      background: #F4FDF9;
+    }
+
+    .scope-box.out-scope {
+      border-top: 4px solid #EF4444;
+      background: #FEF6F6;
+    }
+
+    .scope-box-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .scope-box.in-scope .scope-box-title { color: #065F46; }
+    .scope-box.out-scope .scope-box-title { color: #991B1B; }
+
+    .scope-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .scope-box li {
+      font-size: 11.5px;
+      line-height: 1.35;
+      color: var(--charcoal);
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    /* --- SLIDE 5: Two_Column_Tiled_Text --- */
+    .two-col-tiled-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      height: 100%;
+      align-items: stretch;
+    }
+
+    .triangle-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .triangle-pillar {
+      background: #FAF9F6;
+      border-radius: var(--radius-sm);
+      border-left: 4px solid var(--navy-800);
+      padding: 14px 18px;
+    }
+
+    .triangle-pillar.gold {
+      border-left-color: var(--gold-500);
+      background: #FCF9F2;
+    }
+
+    .pillar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .pillar-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy-900);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pillar-metric {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-600);
+      background: rgba(197, 160, 89, 0.15);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .pillar-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* --- SLIDE 6: Styled_Bullet_Points --- */
+    .bullets-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 100%;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .bullet-row-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px 22px;
+      display: grid;
+      grid-template-columns: 48px 240px 1fr 140px;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      transition: border-color 0.2s ease;
+    }
+
+    .step-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--navy-900);
+      color: var(--gold-500);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-title-group h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy-900);
+    }
+
+    .step-title-group span {
+      font-size: 11.5px;
+      color: var(--gold-600);
+      font-weight: 600;
+    }
+
+    .step-desc-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .step-tag-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-align: right;
+      color: var(--navy-700);
+      background: var(--cream-200);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* --- SLIDE 7: Timeline --- */
+    .timeline-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      height: 100%;
+      align-items: stretch;
+      padding-top: 24px;
+      position: relative;
+    }
+
+    .timeline-rail {
+      position: absolute;
+      top: 50px;
+      left: 120px;
+      right: 120px;
+      height: 4px;
+      background: var(--cream-300);
+      z-index: 1;
+    }
+
+    .timeline-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      z-index: 2;
+    }
+
+    .timeline-node {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--navy-900);
+      border: 4px solid var(--cream-50);
+      box-shadow: 0 0 0 2px var(--gold-500);
+      color: var(--gold-500);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .timeline-phase {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold-600);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .timeline-card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin: 4px 0 10px 0;
+    }
+
+    .timeline-period {
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--cream-100);
+      color: var(--navy-800);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+
+    .timeline-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .timeline-items li {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .timeline-items li::before {
+      content: '•';
+      color: var(--gold-500);
+      font-weight: bold;
+    }
+
+    /* --- SLIDE 8: Rounded_Image_and_Text --- */
+    .team-layout-grid {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 40px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .pm-authority-card {
+      background: var(--navy-900);
+      color: var(--cream-50);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      box-shadow: 0 16px 36px rgba(11, 25, 44, 0.2);
+      text-align: center;
+      position: relative;
+    }
+
+    .pm-avatar-wrap {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      margin: 0 auto 16px auto;
+      overflow: hidden;
+      border: 4px solid var(--gold-500);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
+
+    .pm-avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pm-role-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cream-50);
+      margin-bottom: 4px;
+    }
+
+    .pm-role-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .pm-authority-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(247, 243, 233, 0.15);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #CBD5E1;
+      text-align: left;
+      line-height: 1.45;
+    }
+
+    .team-roles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .role-item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .role-item-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .role-tech-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--gold-600);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .role-item-card p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* --- SLIDE 9: Tiled_Images --- */
+    .deliverables-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      height: 100%;
+      align-items: stretch;
+      padding-top: 6px;
+    }
+
+    .deliverable-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--card-shadow);
+    }
+
+    .deliverable-media {
+      height: 160px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .deliverable-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .deliverable-badge-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(11, 25, 44, 0.85);
+      backdrop-filter: blur(4px);
+      color: var(--gold-500);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(197, 160, 89, 0.4);
+    }
+
+    .deliverable-content {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .deliverable-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 8px;
+    }
+
+    .deliverable-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+
+    .deliverable-checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-top: 1px dashed var(--border-light);
+      padding-top: 12px;
+    }
+
+    .deliverable-checklist li {
+      font-size: 11.5px;
+      color: var(--charcoal);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* --- SLIDE 10: Table --- */
+    .table-wrapper-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 16px;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .custom-table th {
+      background: var(--navy-900);
+      color: var(--cream-100);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 14px 20px;
+      border: none;
+    }
+
+    .custom-table td {
+      padding: 14px 20px;
+      font-size: 13px;
+      color: var(--charcoal);
+      border-bottom: 1px solid rgba(19, 43, 74, 0.07);
+    }
+
+    .custom-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .custom-table tr:nth-child(even) {
+      background: #FAF9F6;
+    }
+
+    .table-phase-name {
+      font-weight: 700;
+      color: var(--navy-900);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .budget-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--navy-800);
+      background: var(--cream-200);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .budget-summary-banner {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .sum-stat-box {
+      background: #FAF9F5;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sum-stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .sum-stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy-900);
+    }
+
+    /* --- SLIDE 11: Section_Title / Risk Matrix --- */
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      height: 100%;
+      align-items: stretch;
+      padding-top: 10px;
+    }
+
+    .risk-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--card-shadow);
+      position: relative;
+    }
+
+    .risk-level-badge {
+      align-self: flex-start;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    .badge-high {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FCA5A5;
+    }
+
+    .badge-medium {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FCD34D;
+    }
+
+    .badge-low {
+      background: #E0E7FF;
+      color: #3730A3;
+      border: 1px solid #C7D2FE;
+    }
+
+    .risk-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .risk-section-block {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border-light);
+      flex: 1;
+    }
+
+    .risk-block-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--navy-600);
+      margin-bottom: 4px;
+    }
+
+    .risk-block-text {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .mitigation-box {
+      background: #F8F9FA;
+      border-left: 3px solid #10B981;
+      padding: 10px 12px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    .mitigation-box p {
+      font-size: 12px;
+      color: #065F46;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    /* --- SLIDE 12: Q&A Closing --- */
+    .closing-slide-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      padding: 40px;
+    }
+
+    .closing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(197, 160, 89, 0.15);
+      border: 1px solid var(--gold-500);
+      color: var(--gold-500);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 18px;
+      border-radius: 30px;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+    }
+
+    .closing-h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--cream-50);
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .closing-h1 span {
+      color: var(--gold-500);
+    }
+
+    .closing-subtitle {
+      font-size: 18px;
+      color: #CBD5E1;
+      max-width: 680px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+
+    .contact-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 780px;
+      width: 100%;
+    }
+
+    .contact-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .contact-card .contact-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94A3B8;
+      margin-bottom: 4px;
+    }
+
+    .contact-card .contact-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold-500);
+    }
+
+    /* Print styling */
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .deck-controls {
+        display: none;
+      }
+      .deck-viewport {
+        gap: 0;
+      }
+      .slide-container {
+        page-break-after: always;
+        box-shadow: none;
+        margin: 0;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP SLIDE NAVIGATION CONTROLS -->
+  <header class="deck-controls" aria-label="Slide Deck Controls">
+    <button class="deck-btn" id="prevBtn" onclick="navigateSlide(-1)" aria-label="Previous Slide">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      Prev
+    </button>
+    <div class="slide-counter" id="slideIndicator">Slide 1 / 12</div>
+    <button class="deck-btn" id="nextBtn" onclick="navigateSlide(1)" aria-label="Next Slide">
+      Next
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="deck-btn" onclick="toggleFullscreen()" style="margin-left: 8px;" aria-label="Fullscreen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      Fullscreen
+    </button>
+  </header>
+
+  <!-- PRESENTATION SLIDE DECK (12 SLIDES, 1280x720 FIXED RATIO) -->
+  <main class="deck-viewport" id="deckContainer">
+
+    <!-- ===================================================================
+         SLIDE 1: JUDUL PROPOSAL
+         Layout: Title_Slide
+         =================================================================== -->
+    <div class="slide-container theme-dark" id="slide-1">
+      <div class="bg-academic-pattern"></div>
+      <div class="title-slide-wrapper">
+        <div class="title-left">
+          <div class="title-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            PROPOSAL PROYEK INFORMATIKA
+          </div>
+          <h1 class="title-h1">
+            Sistem Penjadwalan <span>Matakuliah Otomatis</span>
+          </h1>
+          <p class="title-desc">
+            Implementasi <strong>Algoritma Genetika</strong> untuk Optimasi Jadwal Akademik Multi-Constraint: Alokasi Bebas Bentrok Dosen, Ruang Kuliah/Lab, dan Beban SKS Berbasis Web.
+          </p>
+          <div class="title-meta-grid">
+            <div class="title-meta-item">
+              <div class="meta-label">Mata Kuliah / Domain</div>
+              <div class="meta-val">Manajemen Proyek TI (MPI)</div>
+            </div>
+            <div class="title-meta-item">
+              <div class="meta-label">Model Komputasi</div>
+              <div class="meta-val">Genetic Algorithm (GA) Engine</div>
+            </div>
+            <div class="title-meta-item">
+              <div class="meta-label">Kerangka Waktu</div>
+              <div class="meta-val">4 Bulan (16 Minggu / 1 Semester)</div>
+            </div>
+            <div class="title-meta-item">
+              <div class="meta-label">Stack Teknologi</div>
+              <div class="meta-val">Python Flask • MySQL • Pandas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="title-right">
+          <div class="title-hero-card">
+            <div class="hero-stat-badge">PROJECT HIGHLIGHTS</div>
+            <div class="hero-metric-box">
+              <div class="metric-val">40 Slot</div>
+              <div class="metric-title">Matriks Waktu Akademik</div>
+              <div class="metric-sub">Senin – Jumat (8 sesi/hari terstruktur)</div>
+            </div>
+            <div class="hero-metric-box">
+              <div class="metric-val">100%</div>
+              <div class="metric-title">Target Zero Hard-Conflict</div>
+              <div class="metric-sub">Bentrok dosen & ruang tervalidasi otomatis</div>
+            </div>
+            <div class="hero-metric-box">
+              <div class="metric-val">&lt; 15 Menit</div>
+              <div class="metric-title">Efisiensi Generasi Solusi</div>
+              <div class="metric-sub">Menggantikan proses manual 14 hari kerja</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Program Studi Informatika</span>
+        <span>Slide 1 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 2: LATAR BELAKANG & KEBUTUHAN PROYEK
+         Layout: Image_Right_Text_Left
+         =================================================================== -->
+    <div class="slide-container" id="slide-2">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 1 • Konsep Dasar MPI & Analisis Kebutuhan</div>
+          <h2 class="slide-title">Latar Belakang & Urgensi Solusi TI</h2>
+        </div>
+        <div class="header-badge">NP-Hard Problem</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="img-right-grid">
+          <div class="text-left-col">
+            <span class="context-pill">Karakteristik Unik Proyek TI</span>
+            <p class="lead-text">
+              Di era kompetisi global dan ledakan ragam program studi, penyusunan jadwal kuliah manual menghadapi kendala multi-variabel yang eksponensial. Proyek TI ini menghadirkan sistem cerdas untuk memecahkan kompleksitas kombinatorial.
+            </p>
+            <div class="contrast-box-group">
+              <div class="contrast-card">
+                <h4>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  Tantangan Penjadwalan Konvensional
+                </h4>
+                <p>Proses manual memakan waktu hingga 2–3 minggu, sering menghasilkan bentrok jadwal dosen, inkonsistensi ruang lab vs teori, dan beban SKS yang tidak merata.</p>
+              </div>
+              <div class="contrast-card accent">
+                <h4>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  Perbedaan Esensial Proyek TI vs Proyek Konstruksi
+                </h4>
+                <p>Proyek TI memiliki <em>intangibility</em> tinggi, logika algoritma abstrak, dan membutuhkan siklus validasi iteratif agar hasil solusi dapat diandalkan secara operasional.</p>
+              </div>
+              <div class="contrast-card">
+                <h4>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Solusi Terarah: Algoritma Genetika Terintegrasi
+                </h4>
+                <p>Mengonversi batasan akademik menjadi fungsi fitness matematis dengan penalti tegas, menghasilkan jadwal optimal dalam hitungan menit.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="image-frame">
+            <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80" alt="Kampus Universitas & Mahasiswa">
+            <div class="image-caption-overlay">
+              <strong>Optimasi Penjadwalan Kampus</strong>
+              Menyelaraskan ketersediaan 40 slot waktu, rasio kapasitas kelas, dan fasilitas laboratorium secara presisi.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 1: Pendahuluan</span>
+        <span>Slide 2 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 3: VISI, MISI & TUJUAN AKHIR
+         Layout: Tiled_Text_With_Icons
+         =================================================================== -->
+    <div class="slide-container" id="slide-3">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 2 • Strategic Alignment Proyek</div>
+          <h2 class="slide-title">Visi, Misi & Tujuan Akhir Proyek</h2>
+        </div>
+        <div class="header-badge">Core Project Foundation</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="tiles-grid-3">
+          <!-- TILE 1: VISI -->
+          <div class="tile-card tile-navy">
+            <div class="tile-icon-bubble">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <div class="tile-type">Pilar Strategis I</div>
+            <h3 class="tile-title">Visi Proyek</h3>
+            <p class="tile-desc">
+              Menjadi sistem otomasi penjadwalan akademik terdepan yang andal, adaptif, dan mampu menjamin ekosistem perkuliahan 100% bebas bentrok dengan pemanfaatan ruang yang maksimal.
+            </p>
+            <ul class="tile-bullet-list">
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Optimalisasi aset fisik ruang kuliah & lab
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Kepuasan stakeholder akademik & dosen
+              </li>
+            </ul>
+          </div>
+
+          <!-- TILE 2: MISI -->
+          <div class="tile-card tile-gold">
+            <div class="tile-icon-bubble">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/></svg>
+            </div>
+            <div class="tile-type">Pilar Strategis II</div>
+            <h3 class="tile-title">Misi Proyek</h3>
+            <p class="tile-desc">
+              Membangun komputasi cerdas berbasis Algoritma Genetika (seleksi turnamen, elitism, crossover & mutasi) yang terintegrasi dengan antarmuka web yang mudah digunakan staf pengelola.
+            </p>
+            <ul class="tile-bullet-list">
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Implementasi arsitektur modular Python Flask
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Perumusan fitness function adaptif
+              </li>
+            </ul>
+          </div>
+
+          <!-- TILE 3: TUJUAN AKHIR -->
+          <div class="tile-card tile-steel">
+            <div class="tile-icon-bubble">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-2 5l9-13h-7l2-5l-9 13h7z"/></svg>
+            </div>
+            <div class="tile-type">Pilar Strategis III</div>
+            <h3 class="tile-title">Tujuan & Kualitas</h3>
+            <p class="tile-desc">
+              Menyelesaikan sistem tepat waktu (4 bulan) dan sesuai budget, dengan tingkat kebugaran solusi (fitness) optimal, minim pelanggaran soft-constraint, dan siap pakai.
+            </p>
+            <ul class="tile-bullet-list">
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Waktu eksekusi &lt; 60 detik per 100 generasi
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Penyediaan ekspor jadwal cetak PDF & Excel
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 2: Rencana Strategis</span>
+        <span>Slide 3 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 4: MANAJEMEN RUANG LINGKUP & PENCEGAHAN SCOPE CREEP
+         Layout: Bleed_Image_Right
+         =================================================================== -->
+    <div class="slide-container" id="slide-4">
+      <div class="bleed-layout">
+        <div class="bleed-content-col">
+          <div class="header-tag">Materi 3 • Manajemen Ruang Lingkup Proyek</div>
+          <h2 class="slide-title" style="margin-bottom: 12px;">Ruang Lingkup & Mitigasi Scope Creep</h2>
+          <p style="font-size: 13.5px; line-height: 1.5; color: var(--muted); margin-bottom: 14px;">
+            Definisi ruang lingkup (*Scope Baseline*) yang presisi sangat krusial dalam Proyek TI untuk mencegah <strong>Scope Creep</strong> (pembengkakan fitur liar tanpa kendali biaya dan jadwal).
+          </p>
+
+          <div class="scope-box-grid">
+            <div class="scope-box in-scope">
+              <div class="scope-box-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                IN-SCOPE (Termasuk)
+              </div>
+              <ul>
+                <li>• Engine Algoritma Genetika (seleksi, crossover, mutasi, elitism).</li>
+                <li>• Evaluasi Hard Constraints (bentrok dosen, ruangan, jam tersedia).</li>
+                <li>• Evaluasi Soft Constraints (kapasitas ruang, jenis lab, batas 12-16 SKS).</li>
+                <li>• Antarmuka Web Flask & Manajemen Data (Mata Kuliah, Dosen, Ruangan).</li>
+                <li>• Modul Impor Excel/CSV dan Ekspor Jadwal Matakuliah ke PDF.</li>
+              </ul>
+            </div>
+
+            <div class="scope-box out-scope">
+              <div class="scope-box-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                OUT-OF-SCOPE (Tidak Termasuk)
+              </div>
+              <ul>
+                <li>• Sistem Presensi Dosen/Mahasiswa (Fingerprint / RFID / GPS).</li>
+                <li>• Portal Pembayaran Uang Kuliah (KRS / Payment Gateway Kampus).</li>
+                <li>• Pengadaan hardware server fisik atau infrastruktur jaringan lokal.</li>
+                <li>• Integrasi mobile app native (iOS / Android).</li>
+                <li>• Otentikasi multi-kampus lintas universitas.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="bleed-image-col">
+          <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=800&q=80" alt="Jadwal & Kalender Digital">
+          <div class="bleed-image-tint"></div>
+          <div class="bleed-img-tag">
+            <strong style="color: var(--gold-500); display: block; margin-bottom: 2px;">Change Control Mechanism</strong>
+            Setiap usulan fitur baru harus melalui proses formal <em>Change Request</em> dan analisis dampak terhadap Project Triangle sebelum disetujui.
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 3: Scope Management</span>
+        <span>Slide 4 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 5: BATASAN PROYEK (PROJECT TRIANGLE)
+         Layout: Two_Column_Tiled_Text
+         =================================================================== -->
+    <div class="slide-container" id="slide-5">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 2 • Manajemen Batasan Proyek</div>
+          <h2 class="slide-title">Batasan Proyek: Project Triangle</h2>
+        </div>
+        <div class="header-badge">Triple Constraint Equilibrium</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="two-col-tiled-grid">
+          <!-- KOLOM 1: WAKTU & BIAYA -->
+          <div class="triangle-card">
+            <div class="triangle-pillar">
+              <div class="pillar-header">
+                <span class="pillar-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Dimensi Waktu (Time)
+                </span>
+                <span class="pillar-metric">16 Minggu (4 Bulan)</span>
+              </div>
+              <p class="pillar-desc">
+                Batas waktu ketat 1 semester akademik dengan rincian: 3 minggu inisiasi & studi kelayakan, 3 minggu desain algoritma & skema data, 8 minggu coding GA & web UI, serta 2 minggu UAT & serah terima. Keterlambatan dicegah melalui pemantauan jalur kritis (*Critical Path*).
+              </p>
+            </div>
+
+            <div class="triangle-pillar gold">
+              <div class="pillar-header">
+                <span class="pillar-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                  Dimensi Biaya (Cost)
+                </span>
+                <span class="pillar-metric">Rp 45.000.000 (Fixed Budget)</span>
+              </div>
+              <p class="pillar-desc">
+                Estimasi biaya dialokasikan secara efisien untuk kompensasi tim pengembang (PM, AI dev, web dev, tester), fasilitas uji komputasi cloud, dan administrasi dokumentasi. Memanfaatkan open-source stack (Python, Flask, MySQL) sehingga mengeliminasi biaya lisensi proprietary.
+              </p>
+            </div>
+          </div>
+
+          <!-- KOLOM 2: RUANG LINGKUP & KUALITAS -->
+          <div class="triangle-card">
+            <div class="triangle-pillar">
+              <div class="pillar-header">
+                <span class="pillar-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                  Ruang Lingkup (Scope)
+                </span>
+                <span class="pillar-metric">Baseline Terkunci</span>
+              </div>
+              <p class="pillar-desc">
+                Fokus eksklusif pada penjadwalan akademik otomatis menggunakan Algoritma Genetika dan modul administrasi web. Menolak penambahan fitur di luar dokumen kesepakatan (*no gold plating*) demi menjaga integritas jadwal dan stabilitas anggaran proyek.
+              </p>
+            </div>
+
+            <div class="triangle-pillar gold">
+              <div class="pillar-header">
+                <span class="pillar-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  Kualitas Luaran (Quality)
+                </span>
+                <span class="pillar-metric">Zero Hard-Conflict</span>
+              </div>
+              <p class="pillar-desc">
+                Standar penerimaan sistem: Tidak ada dosen mengajar ganda di slot yang sama, tidak ada bentrok ruang, ketaatan jenis ruangan (Lab vs Teori), dan distribusi beban mengajar 12–16 SKS per dosen. Lulus uji UAT fungsional dengan tingkat akurasi 100%.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 4: Project Constraints</span>
+        <span>Slide 5 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 6: METODOLOGI PENGEMBANGAN (SDLC)
+         Layout: Styled_Bullet_Points
+         =================================================================== -->
+    <div class="slide-container" id="slide-6">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 3 • Metodologi SDLC & Prototyping</div>
+          <h2 class="slide-title">Pendekatan Iteratif & Prototyping SDLC</h2>
+        </div>
+        <div class="header-badge">Agile-Prototyping Model</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="bullets-container">
+          <!-- Step 1 -->
+          <div class="bullet-row-card">
+            <div class="step-badge">01</div>
+            <div class="step-title-group">
+              <h4>Analisis Kebutuhan & Data</h4>
+              <span>Constraint Elicitation</span>
+            </div>
+            <div class="step-desc-text">
+              Mengumpulkan dataset mata kuliah, dosen, ketersediaan 40 slot waktu, dan ruangan. Mengklasifikasikan batasan menjadi *Hard* (wajib) & *Soft* (preferensi).
+            </div>
+            <div class="step-tag-pill">Minggu 1 – 3</div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bullet-row-card">
+            <div class="step-badge">02</div>
+            <div class="step-title-group">
+              <h4>Rancang Bangun Prototipe GA</h4>
+              <span>Genetic Core Modeling</span>
+            </div>
+            <div class="step-desc-text">
+              Mendesain skema kromosom genetik, fungsi seleksi turnamen, one-point crossover (rate 0.8), random mutasi (rate 0.2), serta sistem elitisme untuk menyimpan solusi terbaik.
+            </div>
+            <div class="step-tag-pill">Minggu 4 – 6</div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="bullet-row-card">
+            <div class="step-badge">03</div>
+            <div class="step-title-group">
+              <h4>Evaluasi Prototipe Bersama Stakeholder</h4>
+              <span>Feedback & Tuning Loop</span>
+            </div>
+            <div class="step-desc-text">
+              Menguji output simulasi jadwal awal kepada Biro Administrasi Akademik. Melakukan tuning bobot penalti fitness jika ditemukan anomali sebaran waktu.
+            </div>
+            <div class="step-tag-pill">Minggu 7 – 9</div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="bullet-row-card">
+            <div class="step-badge">04</div>
+            <div class="step-title-group">
+              <h4>Integrasi Sistem Web & Ekspor</h4>
+              <span>Web Interface & DB Integration</span>
+            </div>
+            <div class="step-desc-text">
+              Mengintegrasikan modul GA ke dalam web framework Flask, penyimpanan MySQL, modul upload Excel multi-sheet, dan laporan PDF dinamis dengan visualisasi rapi.
+            </div>
+            <div class="step-tag-pill">Minggu 10 – 14</div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="bullet-row-card">
+            <div class="step-badge">05</div>
+            <div class="step-title-group">
+              <h4>Validasi Final & Deployment</h4>
+              <span>Acceptance & Training</span>
+            </div>
+            <div class="step-desc-text">
+              Uji coba beban sistem (*stress test*) 100 generasi populasi dan serah terima dokumen serta pelatihan operasional kepada staf akademik.
+            </div>
+            <div class="step-tag-pill">Minggu 15 – 16</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 5: Metodologi Pengembangan</span>
+        <span>Slide 6 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 7: SIKLUS HIDUP PROYEK (PROJECT LIFE CYCLE)
+         Layout: Timeline
+         =================================================================== -->
+    <div class="slide-container" id="slide-7">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 3 • Siklus Hidup Proyek (Project Life Cycle)</div>
+          <h2 class="slide-title">4 Tahapan Siklus Hidup Proyek (PLC)</h2>
+        </div>
+        <div class="header-badge">End-to-End Timeline</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="timeline-container">
+          <div class="timeline-rail"></div>
+
+          <!-- FASE 1 -->
+          <div class="timeline-card">
+            <div class="timeline-node">1</div>
+            <div class="timeline-phase">Fase Inisiasi</div>
+            <h3 class="timeline-card-title">Concept</h3>
+            <span class="timeline-period">Minggu 1 – 3</span>
+            <ul class="timeline-items">
+              <li>Studi kelayakan teknis penjadwalan menggunakan Algoritma Genetika.</li>
+              <li>Penyusunan Project Charter & pembagian wewenang manajer proyek.</li>
+              <li>Identifikasi stakeholder utama (BAA, Dosen, Prodi).</li>
+            </ul>
+          </div>
+
+          <!-- FASE 2 -->
+          <div class="timeline-card">
+            <div class="timeline-node">2</div>
+            <div class="timeline-phase">Fase Perencanaan</div>
+            <h3 class="timeline-card-title">Development</h3>
+            <span class="timeline-period">Minggu 4 – 6</span>
+            <ul class="timeline-items">
+              <li>Penyusunan WBS (Work Breakdown Structure) dan jadwal terperinci.</li>
+              <li>Perumusan model matematis fungsi fitness & struktur kromosom.</li>
+              <li>Desain basis data MySQL dan arsitektur UI/UX web.</li>
+            </ul>
+          </div>
+
+          <!-- FASE 3 -->
+          <div class="timeline-card">
+            <div class="timeline-node">3</div>
+            <div class="timeline-phase">Fase Eksekusi</div>
+            <h3 class="timeline-card-title">Implementation</h3>
+            <span class="timeline-period">Minggu 7 – 14</span>
+            <ul class="timeline-items">
+              <li>Pengkodean modul GA engine (`selection`, `crossover`, `mutation`).</li>
+              <li>Pembangunan backend Flask, route handler, & render template.</li>
+              <li>Pengujian fungsional dan simulasi dataset riil universitas.</li>
+            </ul>
+          </div>
+
+          <!-- FASE 4 -->
+          <div class="timeline-card">
+            <div class="timeline-node">4</div>
+            <div class="timeline-phase">Fase Penutupan</div>
+            <h3 class="timeline-card-title">Close-out</h3>
+            <span class="timeline-period">Minggu 15 – 16</span>
+            <ul class="timeline-items">
+              <li>Uji penerimaan pengguna akhir (User Acceptance Testing / UAT).</li>
+              <li>Pelatihan staf administrasi & penyerahan manual book.</li>
+              <li>Penyusunan laporan akhir proyek & evaluasi performa tim.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 6: Siklus Hidup Proyek</span>
+        <span>Slide 7 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 8: TIM PROYEK & KOMPETENSI
+         Layout: Rounded_Image_and_Text
+         =================================================================== -->
+    <div class="slide-container" id="slide-8">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 1 & 2 • Struktur Organisasi Proyek</div>
+          <h2 class="slide-title">Tim Proyek & Matriks Kompetensi</h2>
+        </div>
+        <div class="header-badge">PM Authority & Key Roles</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="team-layout-grid">
+          <!-- SISI KIRI: MANAJER PROYEK -->
+          <div class="pm-authority-card">
+            <div class="pm-avatar-wrap">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Manajer Proyek TI">
+            </div>
+            <h3 class="pm-role-title">Project Manager</h3>
+            <div class="pm-role-sub">Pemimpin Proyek TI (Full Authority)</div>
+            <div class="pm-authority-badge">
+              <strong>Kewenangan & Tanggung Jawab:</strong>
+              Memegang mandat penuh dalam alokasi anggaran Rp 45 jt, pengendalian ruang lingkup (Change Control), mitigasi risiko, serta jembatan utama komunikasi dengan stakeholder universitas.
+            </div>
+          </div>
+
+          <!-- SISI KANAN: ROLE SPESIFIK TIM IT -->
+          <div class="team-roles-grid">
+            <div class="role-item-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                System Analyst
+              </h4>
+              <div class="role-tech-tag">Domain: Elicitation & Constraints</div>
+              <p>Menganalisis proses bisnis penjadwalan, memetakan preferensi dosen, batasan ruang kuliah, dan menyusun SRS (Software Requirements Specification).</p>
+            </div>
+
+            <div class="role-item-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                Lead GA Programmer
+              </h4>
+              <div class="role-tech-tag">Domain: Genetic Algorithm & NumPy</div>
+              <p>Mengimplementasikan mesin pencarian stokastik, penentuan bobot penalti fitness, operator mutasi gen, dan optimalisasi konvergensi generasi.</p>
+            </div>
+
+            <div class="role-item-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Full-Stack Web Dev
+              </h4>
+              <div class="role-tech-tag">Domain: Flask, MySQL, Jinja2, Bootstrap</div>
+              <p>Membangun antarmuka web, dashboard pemantauan konflik, modul import Excel via Pandas, dan generator laporan PDF jadwal otomatis.</p>
+            </div>
+
+            <div class="role-item-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                QA & Tester
+              </h4>
+              <div class="role-tech-tag">Domain: Verification, Validation & UAT</div>
+              <p>Melakukan pengujian blackbox dan verifikasi zero-conflict pada jadwal luaran serta memfasilitasi sesi User Acceptance Testing (UAT).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 7: Organisasi & SDM</span>
+        <span>Slide 8 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 9: HASIL AKHIR PROYEK (DELIVERABLES)
+         Layout: Tiled_Images
+         =================================================================== -->
+    <div class="slide-container" id="slide-9">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 2 • Hasil Nyata Proyek (Deliverables)</div>
+          <h2 class="slide-title">Hasil Akhir & Luaran Nyata Proyek</h2>
+        </div>
+        <div class="header-badge">Tangible Project Outputs</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="deliverables-grid">
+          <!-- TILE 1: SOFTWARE -->
+          <div class="deliverable-card">
+            <div class="deliverable-media">
+              <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80" alt="Aplikasi Web & Source Code">
+              <div class="deliverable-badge-top">DELIVERABLE 01</div>
+            </div>
+            <div class="deliverable-content">
+              <h3 class="deliverable-title">Aplikasi Web & Source Code</h3>
+              <p class="deliverable-desc">
+                Sistem web berbasis Python Flask siap pakai dilengkapi engine Algoritma Genetika, modul manajemen master data, dan skrip instalasi database MySQL.
+              </p>
+              <ul class="deliverable-checklist">
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Repository Git lengkap dengan unit test
+                </li>
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Dashboard visualisasi jadwal 40 slot
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- TILE 2: DOKUMENTASI -->
+          <div class="deliverable-card">
+            <div class="deliverable-media">
+              <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80" alt="Dokumentasi Teknis & Panduan">
+              <div class="deliverable-badge-top">DELIVERABLE 02</div>
+            </div>
+            <div class="deliverable-content">
+              <h3 class="deliverable-title">Dokumentasi Teknis & Panduan</h3>
+              <p class="deliverable-desc">
+                Dokumen komprehensif mencakup Software Requirement Specification (SRS), arsitektur model kromosom GA, skema ERD, dan Buku Panduan Pengguna.
+              </p>
+              <ul class="deliverable-checklist">
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Buku Panduan Pengguna (*User Manual*)
+                </li>
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Laporan Hasil Uji Konvergensi Algoritma
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- TILE 3: TRAINING & SERAH TERIMA -->
+          <div class="deliverable-card">
+            <div class="deliverable-media">
+              <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80" alt="Pelatihan & Serah Terima">
+              <div class="deliverable-badge-top">DELIVERABLE 03</div>
+            </div>
+            <div class="deliverable-content">
+              <h3 class="deliverable-title">Pelatihan & Garansi Rilis</h3>
+              <p class="deliverable-desc">
+                Workshop operasional langsung bagi staf akademik, simulasi penanganan ketersediaan dosen, serta masa garansi perbaikan bug selama 30 hari kalender.
+              </p>
+              <ul class="deliverable-checklist">
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Berita Acara Serah Terima (BAST) sistem
+                </li>
+                <li>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  Pendampingan penyusunan jadwal semester aktif
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 8: Deliverables</span>
+        <span>Slide 9 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 10: ESTIMASI WAKTU & BIAYA (RANGKUMAN)
+         Layout: Table
+         =================================================================== -->
+    <div class="slide-container" id="slide-10">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 2 • Estimasi Waktu & Biaya Proyek</div>
+          <h2 class="slide-title">Rincian Anggaran & Durasi Siklus Hidup</h2>
+        </div>
+        <div class="header-badge">Budget Allocation Model</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="table-wrapper-card">
+          <table class="custom-table" aria-label="Tabel Estimasi Waktu dan Biaya">
+            <thead>
+              <tr>
+                <th style="width: 28%;">Fase Siklus Hidup (PLC)</th>
+                <th style="width: 18%;">Periode / Durasi</th>
+                <th style="width: 16%;">Alokasi Biaya</th>
+                <th style="width: 18%;">Nominal (IDR)</th>
+                <th style="width: 20%;">Deliverable Utama</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="table-phase-name">
+                    <span style="display:inline-block;width:8px;height:8px;background:var(--navy-700);border-radius:50%;"></span>
+                    Fase 1: Concept
+                  </span>
+                </td>
+                <td>Minggu 1 – 3 (3 Minggu)</td>
+                <td>15%</td>
+                <td><span class="budget-pill">Rp 6.750.000</span></td>
+                <td>Project Charter & SRS Dokumen</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="table-phase-name">
+                    <span style="display:inline-block;width:8px;height:8px;background:var(--gold-500);border-radius:50%;"></span>
+                    Fase 2: Development
+                  </span>
+                </td>
+                <td>Minggu 4 – 6 (3 Minggu)</td>
+                <td>20%</td>
+                <td><span class="budget-pill">Rp 9.000.000</span></td>
+                <td>Desain GA Engine & Skema DB</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="table-phase-name">
+                    <span style="display:inline-block;width:8px;height:8px;background:#059669;border-radius:50%;"></span>
+                    Fase 3: Implementation
+                  </span>
+                </td>
+                <td>Minggu 7 – 14 (8 Minggu)</td>
+                <td>50%</td>
+                <td><span class="budget-pill">Rp 22.500.000</span></td>
+                <td>Aplikasi Flask Web & GA Tuning</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="table-phase-name">
+                    <span style="display:inline-block;width:8px;height:8px;background:var(--navy-900);border-radius:50%;"></span>
+                    Fase 4: Close-out
+                  </span>
+                </td>
+                <td>Minggu 15 – 16 (2 Minggu)</td>
+                <td>15%</td>
+                <td><span class="budget-pill">Rp 6.750.000</span></td>
+                <td>Pelatihan User & Dokumen BAST</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="budget-summary-banner">
+          <div class="sum-stat-box">
+            <span class="sum-stat-label">Total Durasi Proyek</span>
+            <span class="sum-stat-value">16 Minggu (4 Bulan)</span>
+          </div>
+          <div class="sum-stat-box">
+            <span class="sum-stat-label">Total Investasi Proyek</span>
+            <span class="sum-stat-value" style="color: var(--gold-600);">Rp 45.000.000</span>
+          </div>
+          <div class="sum-stat-box">
+            <span class="sum-stat-label">Efisiensi Pasca Implementasi</span>
+            <span class="sum-stat-value" style="color: #059669;">98% Waktu Hemat</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 9: Estimasi Waktu & Biaya</span>
+        <span>Slide 10 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 11: MANAJEMEN RISIKO
+         Layout: Section_Title
+         =================================================================== -->
+    <div class="slide-container" id="slide-11">
+      <header class="slide-header">
+        <div>
+          <div class="header-tag">Materi 1 & 2 • Ketidakpastian Proyek TI</div>
+          <h2 class="slide-title">Manajemen Risiko & Strategi Mitigasi</h2>
+        </div>
+        <div class="header-badge">Risk Response Planning</div>
+      </header>
+
+      <div class="slide-body">
+        <div class="risk-grid">
+          <!-- RISIKO 1 -->
+          <div class="risk-card">
+            <span class="risk-level-badge badge-high">Tingkat Risiko: Tinggi</span>
+            <h3 class="risk-title">Ekspektasi Tidak Realistis dari Pengguna</h3>
+            <div class="risk-section-block">
+              <div class="risk-block-title">Analisis Karakteristik TI (Materi 1)</div>
+              <p class="risk-block-text">
+                Pengguna berharap sistem dapat menyelesaikan bentrok meski secara fisik jumlah ruangan atau kuota waktu yang tersedia lebih sedikit daripada jumlah rombel.
+              </p>
+            </div>
+            <div class="mitigation-box">
+              <p><strong>Strategi Mitigasi:</strong> Membangun modul *Pre-Check Feasibility* yang memverifikasi kecukupan kuota ruang dan jam sebelum komputasi GA dijalankan.</p>
+            </div>
+          </div>
+
+          <!-- RISIKO 2 -->
+          <div class="risk-card">
+            <span class="risk-level-badge badge-medium">Tingkat Risiko: Sedang</span>
+            <h3 class="risk-title">Konvergensi Prematur (Local Optima)</h3>
+            <div class="risk-section-block">
+              <div class="risk-block-title">Ketidakpastian Algoritma</div>
+              <p class="risk-block-text">
+                Populasi solusi terjebak pada skor fitness sub-optimal sehingga tetap menyisakan bentrok soft-constraint pada generasi ke-100.
+              </p>
+            </div>
+            <div class="mitigation-box">
+              <p><strong>Strategi Mitigasi:</strong> Menerapkan adaptif mutation rate (0.2), turnamen seleksi berbasis k-random, dan elitisme untuk menjaga variasi kromosom.</p>
+            </div>
+          </div>
+
+          <!-- RISIKO 3 -->
+          <div class="risk-card">
+            <span class="risk-level-badge badge-medium">Tingkat Risiko: Sedang</span>
+            <h3 class="risk-title">Scope Creep Fitur di Tengah Proyek</h3>
+            <div class="risk-section-block">
+              <div class="risk-block-title">Pengendalian Ruang Lingkup (Materi 3)</div>
+              <p class="risk-block-text">
+                Permintaan penambahan modul baru (misal absensi dosen atau integrasi sistem penggajian) yang dapat merusak baseline jadwal dan biaya.
+              </p>
+            </div>
+            <div class="mitigation-box">
+              <p><strong>Strategi Mitigasi:</strong> Menetapkan klausul *Scope Freeze* tertulis. Fitur baru ditampung untuk rilis Fase 2 melalui mekanisme Change Request resmi.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Bab 10: Manajemen Risiko</span>
+        <span>Slide 11 / 12</span>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 12: PENUTUP & TANYA JAWAB
+         Layout: Q&A
+         =================================================================== -->
+    <div class="slide-container theme-dark" id="slide-12">
+      <div class="bg-academic-pattern"></div>
+      <div class="closing-slide-wrapper">
+        <div class="closing-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          SESI DISKUSI & TANYA JAWAB
+        </div>
+        <h2 class="closing-h1">
+          Terima <span>Kasih</span>
+        </h2>
+        <p class="closing-subtitle">
+          Kesiapan penuh mewujudkan sistem penjadwalan akademik yang efisien, transparan, dan bebas bentrok melalui integrasi disiplin Manajemen Proyek Informatika dan kekuatan Algoritma Genetika.
+        </p>
+
+        <div class="contact-card-grid">
+          <div class="contact-card">
+            <div class="contact-label">Project Manager / Kontak</div>
+            <div class="contact-val">pm.scheduler@univ.ac.id</div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-label">Repositori Proyek</div>
+            <div class="contact-val">github.com/project-scheduler-ga</div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-label">Program Studi / Tim</div>
+            <div class="contact-val">Informatika • MPI 2026</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Proposal Proyek MPI • Akhir Presentasi</span>
+        <span>Slide 12 / 12</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- JAVASCRIPT SLIDE CONTROLLER -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 12;
+
+    function updateSlideIndicator() {
+      const indicator = document.getElementById('slideIndicator');
+      if (indicator) {
+        indicator.textContent = `Slide ${currentSlide} / ${totalSlides}`;
+      }
+    }
+
+    function scrollToSlide(slideIndex) {
+      if (slideIndex < 1) slideIndex = 1;
+      if (slideIndex > totalSlides) slideIndex = totalSlides;
+      currentSlide = slideIndex;
+      
+      const slideEl = document.getElementById(`slide-${currentSlide}`);
+      if (slideEl) {
+        slideEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      updateSlideIndicator();
+    }
+
+    function navigateSlide(direction) {
+      scrollToSlide(currentSlide + direction);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn(`Fullscreen error: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard Shortcuts (Arrow keys, Spacebar, Page Up/Down)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        navigateSlide(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        navigateSlide(-1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        scrollToSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        scrollToSlide(totalSlides);
+      }
+    });
+
+    // Observe active slide on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const id = entry.target.id;
+          const num = parseInt(id.replace('slide-', ''), 10);
+          if (!isNaN(num)) {
+            currentSlide = num;
+            updateSlideIndicator();
+          }
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.slide-container').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

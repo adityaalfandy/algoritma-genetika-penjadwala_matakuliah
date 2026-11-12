@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+        <div class="bg-white p-4 border-4 border-black shadow-[8px_8px_0px_#000] inline-block">
+            <h2 class="text-4xl font-black uppercase tracking-tight">DATA DOSEN</h2>
+            <p class="font-bold border-t-2 border-black pt-2 mt-2">REKAP BEBAN SKS MENGAJAR</p>
+        </div>
+        <div class="bg-white border-4 border-black shadow-[4px_4px_0px_#000] p-3 flex flex-col gap-2 font-black text-sm uppercase">
+            <div class="flex items-center gap-2"><div class="w-4 h-4 border-2 border-black bg-yellow-400"></div> < 12 SKS (KURANG)</div>
+            <div class="flex items-center gap-2"><div class="w-4 h-4 border-2 border-black bg-green-400"></div> 12-16 SKS (IDEAL)</div>
+            <div class="flex items-center gap-2"><div class="w-4 h-4 border-2 border-black bg-red-400"></div> > 16 SKS (OVERLOAD)</div>
+        </div>
+    </div>
+
+    <div class="bg-white border-4 border-black shadow-[12px_12px_0px_#000] overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left font-bold border-collapse">
+                <thead class="bg-black text-white uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-4 border-r-2 border-white w-10">NO</th>
+                        <th class="px-6 py-4 border-r-2 border-white">DOSEN</th>
+                        <th class="px-6 py-4 border-r-2 border-white text-center">KELAS</th>
+                        <th class="px-6 py-4 border-r-2 border-white text-center">SKS</th>
+                        <th class="px-6 py-4 border-r-2 border-white">STATUS</th>
+                        <th class="px-6 py-4">DETAIL</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y-4 divide-black">
+                    {% for dosen in lecturers %}
+                    <tr class="hover:bg-yellow-100">
+                        <td class="px-6 py-4 border-r-4 border-black text-xl font-black">{{ loop.index }}</td>
+                        
+                        <td class="px-6 py-4 border-r-4 border-black">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 border-4 border-black bg-pink-300 flex items-center justify-center font-black text-2xl shadow-[2px_2px_0px_#000]">
+                                    {{ dosen.nama[:1] }}
+                                </div>
+                                <span class="font-black text-xl uppercase">{{ dosen.nama }}</span>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4 border-r-4 border-black text-center">
+                            <span class="bg-white border-4 border-black px-4 py-2 text-2xl font-black shadow-[4px_4px_0px_#000]">
+                                {{ dosen.total_kelas }}
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 border-r-4 border-black text-center">
+                            <span class="text-4xl font-black">{{ dosen.total_sks }}</span>
+                        </td>
+
+                        <td class="px-6 py-4 border-r-4 border-black">
+                            {% if dosen.total_sks < 12 %}
+                                <div class="bg-yellow-400 border-4 border-black px-3 py-2 font-black uppercase text-center shadow-[4px_4px_0px_#000]">
+                                    UNDERLOAD
+                                </div>
+                            {% elif dosen.total_sks >= 12 and dosen.total_sks <= 16 %}
+                                <div class="bg-green-400 border-4 border-black px-3 py-2 font-black uppercase text-center shadow-[4px_4px_0px_#000]">
+                                    IDEAL
+                                </div>
+                            {% else %}
+                                <div class="bg-red-400 border-4 border-black px-3 py-2 font-black uppercase text-center shadow-[4px_4px_0px_#000] text-white">
+                                    OVERLOAD
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <details class="group cursor-pointer">
+                                <summary class="bg-cyan-300 border-4 border-black px-4 py-2 font-black uppercase inline-flex items-center gap-2 hover:bg-cyan-400 active:translate-y-1 transition list-none shadow-[4px_4px_0px_#000]">
+                                    <span>LIHAT</span>
+                                    <i class="ph-bold ph-caret-down group-open:rotate-180 transition"></i>
+                                </summary>
+                                <div class="mt-4 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_#000]">
+                                    <ul class="space-y-2 font-bold uppercase">
+                                        {% for mk in dosen.daftar_matkul %}
+                                            <li class="border-b-2 border-black pb-1 flex items-center gap-2"><i class="ph-bold ph-caret-right"></i> {{ mk }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </details>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% if not lecturers %}
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-3xl font-black uppercase border-b-4 border-black bg-gray-200">
+                            DATA KOSONG BRO
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
