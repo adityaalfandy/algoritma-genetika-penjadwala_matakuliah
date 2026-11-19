@@ -70,6 +70,13 @@ class FitnessCalculator:
                             score -= 10
                             details.append(f"⚠️ KELAS BENTROK: {matkul.nama} & {other_matkul.nama} (Semester {gene.semester}) di Slot {gene.time_slot}")
 
+            # --- CEK 5 (FR-03): Ketersediaan Waktu Dosen ---
+            allowed_slots = self.preferensi_dict.get(gene.matkul_id)
+            if allowed_slots and gene.time_slot not in allowed_slots:
+                score -= 100
+                nama_dosen = self.dosen_dict[gene.dosen_id].nama
+                details.append(f"⏰ WAKTU TIDAK BISA: {nama_dosen} ({matkul.nama}) tidak tersedia di Slot {gene.time_slot}")
+
             # --- Hitung Beban SKS ---
             if gene.dosen_id not in lecturer_sks_load: lecturer_sks_load[gene.dosen_id] = 0
             lecturer_sks_load[gene.dosen_id] += gene.sks

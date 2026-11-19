@@ -5,12 +5,14 @@ from app.genetic_algorithm.crossover import Crossover
 from app.genetic_algorithm.mutation import Mutation
 
 class Population:
-    def __init__(self, mata_kuliah_list, dosen_list, ruangan_list, preferensi_dict, population_size=50):
+    def __init__(self, mata_kuliah_list, dosen_list, ruangan_list, preferensi_dict, population_size=50, tournament_size=4):
         self.mata_kuliah_list = mata_kuliah_list
         self.dosen_list = dosen_list
         self.ruangan_list = ruangan_list
         self.population_size = population_size
+        self.tournament_size = tournament_size
         self.chromosomes = []
+        self.fitness_history = []
         
         # Setup Dictionaries
         self.mata_kuliah_dict = {mk.id: mk for mk in mata_kuliah_list}
@@ -22,7 +24,7 @@ class Population:
             self.mata_kuliah_dict, self.dosen_dict, 
             self.ruangan_dict, preferensi_dict
         )
-        self.selector = TournamentSelection(tournament_size=4)
+        self.selector = TournamentSelection(tournament_size=tournament_size)
         self.mutation = Mutation(dosen_list, ruangan_list)
     
     def initialize(self):
@@ -42,12 +44,19 @@ class Population:
     
     def run_genetic_algorithm(self, max_generations=100, mutation_rate=0.1):
         self.initialize()
+        self.fitness_history = []
         best_sol = None
         
         for generation in range(max_generations):
             # Elitism: Sort berdasarkan fitness tertinggi
             sorted_pop = sorted(self.chromosomes, key=lambda x: x.fitness, reverse=True)
             best_sol = sorted_pop[0]
+            avg_fitness = sum(c.fitness for c in self.chromosomes) / len(self.chromosomes) if self.chromosomes else 0
+            self.fitness_history.append({
+                'gen': generation + 1,
+                'best': round(best_sol.fitness, 2),
+                'avg': round(avg_fitness, 2)
+            })
             
             # Print progress di console (untuk debug)
             if generation % 10 == 0:
@@ -70,6 +79,7 @@ class Population:
             self.evaluate_fitness()
             
         # --- BAGIAN PENTING: RETURN 4 VALUE ---
+        best_sol = max(self.chromosomes, key=lambda x: x.fitness)
         # Hitung ulang fitness untuk solusi terbaik agar kita dapat detail logs-nya
         best_sol.fitness = self.fitness_calculator.calculate(best_sol)
         

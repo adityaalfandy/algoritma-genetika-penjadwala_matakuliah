@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Penjadwalan Cerdas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { font-family: 'Public Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track { background: #fff; border-left: 2px solid #000; }
+        ::-webkit-scrollbar-thumb { background: #000; border: 2px solid #fff; }
+    </style>
+</head>
+<body class="bg-yellow-300 min-h-screen flex flex-col text-black font-bold"
+      x-data="{
+          activeRole: '{{ active_role|default('admin') }}',
+          username: '{{ entered_username|default('') }}',
+          password: '',
+          showPassword: false
+      }">
+
+    <!-- Top Neo-Brutalism Header -->
+    <header class="h-16 bg-pink-300 border-b-4 border-black flex items-center justify-between px-6 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-cyan-300 border-4 border-black flex items-center justify-center font-black text-xl shadow-[3px_3px_0px_#000]">
+                S
+            </div>
+            <span class="font-black text-xl md:text-2xl uppercase tracking-widest">SMART SCHEDULER</span>
+        </div>
+        <span class="bg-black text-white px-3 py-1 text-xs md:text-sm font-black uppercase tracking-wider">
+            TIM NEXORA &bull; GA
+        </span>
+    </header>
+
+    <!-- Main Centered Login Layout -->
+    <main class="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
+
+            <!-- Left Panel: Info & Role Capabilities -->
+            <div class="lg:col-span-2 bg-cyan-300 border-4 border-black shadow-[12px_12px_0px_#000] p-6 md:p-8 flex flex-col justify-between gap-6">
+                <div>
+                    <span class="bg-black text-white px-3 py-1 text-xs font-black uppercase tracking-widest inline-block">
+                        SISTEM PENJADWALAN CERDAS
+                    </span>
+                    <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight mt-4 leading-none">
+                        PORTAL AKSES
+                    </h1>
+                    <p class="mt-3 font-bold border-t-4 border-black pt-3 text-sm md:text-base">
+                        Optimasi jadwal perkuliahan otomatis menggunakan Algoritma Genetika.
+                    </p>
+
+                    <!-- Dynamic Role Features Box -->
+                    <div class="mt-6 bg-white border-4 border-black p-4 shadow-[4px_4px_0px_#000]">
+                        <p class="font-black text-xs uppercase bg-black text-white px-2 py-1 inline-block mb-3"
+                           x-text="activeRole === 'admin' ? 'HAK AKSES ADMIN' : 'HAK AKSES DOSEN'"></p>
+
+                        <ul x-show="activeRole === 'admin'" class="space-y-2 text-sm font-bold">
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> CRUD Matkul, Dosen &amp; Ruangan</li>
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Import Data Excel (.xlsx) &amp; CSV</li>
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Atur Parameter &amp; Generate GA</li>
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Simpan Permanen &amp; Kelola Riwayat</li>
+                        </ul>
+
+                        <ul x-show="activeRole === 'user'" style="display: none;" class="space-y-2 text-sm font-bold">
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Lihat Jadwal Kuliah Tersimpan</li>
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Grafik Perkembangan Fitness</li>
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Rekap Beban SKS Dosen</li>
+                            <li class="flex items-center gap-2"><i class="ph-bold ph-check-square text-lg"></i> Cetak &amp; Unduh Laporan PDF</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Petunjuk & Keamanan Akses -->
+                <div class="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_#000]">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="ph-bold ph-shield-check text-lg"></i>
+                        <span class="font-black text-xs uppercase tracking-wider">KEAMANAN &amp; AKSES</span>
+                    </div>
+                    <p class="text-xs md:text-sm font-bold text-gray-800 leading-relaxed">
+                        Silakan masukkan username dan kata sandi akun resmi Anda. Hubungi administrator sistem jika Anda memerlukan bantuan akses akun.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel: Login Form Card -->
+            <div class="lg:col-span-3 bg-white border-4 border-black shadow-[12px_12px_0px_#000] flex flex-col">
+                <!-- Role Switcher Tabs (matching index.html tab style) -->
+                <div class="flex border-b-4 border-black bg-gray-100">
+                    <button type="button" @click="activeRole = 'admin'"
+                            :class="activeRole === 'admin' ? 'bg-pink-300' : 'bg-transparent hover:bg-white'"
+                            class="flex-1 py-4 text-base md:text-lg font-black border-r-4 border-black uppercase flex items-center justify-center gap-2 transition">
+                        <i class="ph-bold ph-shield-check text-2xl"></i> LOGIN ADMIN
+                    </button>
+                    <button type="button" @click="activeRole = 'user'"
+                            :class="activeRole === 'user' ? 'bg-cyan-300' : 'bg-transparent hover:bg-white'"
+                            class="flex-1 py-4 text-base md:text-lg font-black uppercase flex items-center justify-center gap-2 transition">
+                        <i class="ph-bold ph-chalkboard-teacher text-2xl"></i> LOGIN DOSEN
+                    </button>
+                </div>
+
+                <div class="p-6 md:p-8 flex-1 flex flex-col justify-center">
+                    <div class="mb-6">
+                        <span class="bg-black text-white px-3 py-1 text-xs font-black uppercase inline-block"
+                              x-text="activeRole === 'admin' ? 'ADMINISTRATOR AKADEMIK' : 'DOSEN PENGAMPU'"></span>
+                        <h2 class="text-3xl font-black uppercase tracking-tight mt-2"
+                            x-text="activeRole === 'admin' ? 'MASUK DASHBOARD ADMIN' : 'MASUK PORTAL DOSEN'"></h2>
+                    </div>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="mb-6 space-y-3" x-data="{ show: true }" x-show="show">
+                                {% for category, message in messages %}
+                                <div class="p-3 border-4 border-black font-black flex justify-between items-center shadow-[4px_4px_0px_#000]
+                                    {% if category == 'error' %} bg-red-400 text-black
+                                    {% else %} bg-green-400 text-black {% endif %}">
+                                    <div class="flex items-center gap-2 text-sm uppercase">
+                                        <i class="text-xl ph-bold {% if category == 'error' %}ph-warning-circle{% else %}ph-check-circle{% endif %}"></i>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                    <button type="button" @click="show = false" class="text-xl hover:scale-125 transition"><i class="ph-bold ph-x"></i></button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('login', next=request.args.get('next', '')) }}" class="space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="role" :value="activeRole">
+
+                        <div>
+                            <label for="username" class="block font-black text-sm uppercase mb-2">
+                                <span class="bg-black text-white px-2 py-0.5">USERNAME</span>
+                            </label>
+                            <div class="relative">
+                                <i class="ph-bold ph-user-circle absolute left-4 top-1/2 -translate-y-1/2 text-2xl"></i>
+                                <input id="username" name="username" type="text" x-model="username" required autocomplete="username"
+                                       placeholder="Masukkan username..."
+                                       class="w-full bg-white border-4 border-black pl-12 pr-4 py-3.5 text-lg font-bold shadow-[4px_4px_0px_#000] focus:outline-none focus:bg-yellow-100">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="password" class="block font-black text-sm uppercase mb-2">
+                                <span class="bg-black text-white px-2 py-0.5">PASSWORD</span>
+                            </label>
+                            <div class="relative">
+                                <i class="ph-bold ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-2xl"></i>
+                                <input id="password" name="password" :type="showPassword ? 'text' : 'password'" x-model="password" required autocomplete="current-password"
+                                       placeholder="Masukkan password..."
+                                       class="w-full bg-white border-4 border-black pl-12 pr-14 py-3.5 text-lg font-bold shadow-[4px_4px_0px_#000] focus:outline-none focus:bg-yellow-100">
+                                <button type="button" @click="showPassword = !showPassword"
+                                        title="Tampilkan / Sembunyikan Password"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 border-2 border-black bg-yellow-300 px-2 py-1 hover:bg-yellow-400">
+                                    <i class="ph-bold text-lg" :class="showPassword ? 'ph-eye-slash' : 'ph-eye'"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                :class="activeRole === 'admin' ? 'bg-pink-400 hover:bg-pink-500' : 'bg-cyan-400 hover:bg-cyan-500'"
+                                class="w-full border-4 border-black py-4 font-black uppercase text-xl shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition flex items-center justify-center gap-3">
+                            <i class="ph-bold ph-sign-in text-2xl"></i>
+                            <span x-text="activeRole === 'admin' ? 'MASUK SEBAGAI ADMIN' : 'MASUK SEBAGAI DOSEN'"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
+

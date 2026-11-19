@@ -3,28 +3,98 @@
 {% block content %}
 <div x-data="{ showModal: false }">
 
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+    {% if not schedule %}
+    <div class="bg-white border-4 border-black shadow-[12px_12px_0px_#000] p-8 md:p-12 text-center max-w-2xl mx-auto mt-8">
+        <div class="w-20 h-20 bg-yellow-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-6 shadow-[4px_4px_0px_#000]">
+            <i class="ph-bold ph-calendar-x"></i>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tight mb-3">BELUM ADA JADWAL</h2>
+        <p class="font-bold text-lg mb-8 border-t-4 border-black pt-4">
+            {% if session.get('role') == 'admin' %}
+                Belum ada jadwal yang digenerate. Kembali ke Dashboard Admin untuk mengatur parameter dan menjalankan Algoritma Genetika.
+            {% else %}
+                Admin belum menggenerate atau menyimpan jadwal perkuliahan. Silakan cek kembali nanti atau lihat rekap data dosen.
+            {% endif %}
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            {% if session.get('role') == 'admin' %}
+            <a href="/" class="bg-cyan-400 border-4 border-black px-8 py-4 font-black uppercase text-lg shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition inline-flex items-center gap-2">
+                <i class="ph-bold ph-lightning text-2xl"></i> KE DASHBOARD ADMIN
+            </a>
+            {% else %}
+            <a href="/dosen" class="bg-cyan-400 border-4 border-black px-8 py-4 font-black uppercase text-lg shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition inline-flex items-center gap-2">
+                <i class="ph-bold ph-users-three text-2xl"></i> LIHAT DATA DOSEN
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
+            {% if session.get('role') == 'admin' %}
             <a href="/" class="text-xl font-black bg-black text-white px-3 py-1 mb-4 inline-flex items-center gap-2 hover:bg-gray-800 transition">
                 <i class="ph-bold ph-arrow-left"></i> KEMBALI
             </a>
+            {% endif %}
             <div class="bg-white p-4 border-4 border-black shadow-[8px_8px_0px_#000] inline-block">
                 <h2 class="text-4xl font-black uppercase tracking-tight">HASIL PENJADWALAN</h2>
-                <div class="bg-green-400 border-2 border-black px-2 py-1 inline-flex items-center gap-2 mt-2 font-bold uppercase">
-                    <i class="ph-bold ph-check-circle"></i> OPTIMASI SELESAI
+                <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <div class="bg-green-400 border-2 border-black px-2 py-1 inline-flex items-center gap-2 font-bold uppercase text-sm">
+                        <i class="ph-bold ph-check-circle"></i> OPTIMASI SELESAI
+                    </div>
+                    {% if active_run %}
+                    <div class="bg-yellow-300 border-2 border-black px-2 py-1 font-black uppercase text-sm">
+                        RUN #{{ active_run.id }} &bull; {{ active_run.created_at.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
         
-        <div class="flex gap-3">
-            <a href="/download_pdf" class="bg-pink-400 border-4 border-black px-6 py-4 font-black uppercase shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition flex items-center gap-3 text-lg">
+        <div class="flex flex-wrap gap-3 items-center">
+            <a href="/download_pdf{% if active_run %}?run_id={{ active_run.id }}{% endif %}" class="bg-pink-400 border-4 border-black px-6 py-4 font-black uppercase shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition flex items-center gap-3 text-lg">
                 <i class="ph-bold ph-printer text-3xl"></i> CETAK PDF
             </a>
         </div>
     </div>
 
+    <!-- RIWAYAT JADWAL TERSIMPAN (FR-02) -->
+    {% if runs %}
+    <div class="bg-white border-4 border-black shadow-[8px_8px_0px_#000] p-4 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-3 flex-wrap">
+            <span class="bg-black text-white px-3 py-1 font-black uppercase text-xs">RIWAYAT TERSIMPAN</span>
+            <form action="/hasil" method="GET" class="flex items-center gap-2">
+                <select name="run_id" onchange="this.form.submit()" class="border-4 border-black bg-yellow-100 px-3 py-2 font-black text-sm uppercase focus:outline-none">
+                    {% for r in runs %}
+                    <option value="{{ r.id }}" {% if active_run and active_run.id == r.id %}selected{% endif %}>
+                        #{{ r.id }} &mdash; {{ r.created_at.strftime('%d/%m/%Y %H:%M') }} (FIT: {{ r.fitness_score }} | KONFLIK: {{ r.conflicts }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            {% if active_run %}
+            <span class="bg-cyan-200 border-2 border-black px-2 py-1 text-xs font-black uppercase">POP: {{ active_run.population_size }}</span>
+            <span class="bg-pink-200 border-2 border-black px-2 py-1 text-xs font-black uppercase">GEN: {{ active_run.max_generations }}</span>
+            <span class="bg-yellow-200 border-2 border-black px-2 py-1 text-xs font-black uppercase">MUT: {{ active_run.mutation_rate }}</span>
+            {% if session.get('role') == 'admin' %}
+            <form action="/schedule/delete/{{ active_run.id }}" method="POST" onsubmit="return confirm('Hapus riwayat jadwal #{{ active_run.id }}?')" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="bg-red-400 hover:bg-red-500 border-2 border-black px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_#000]">
+                    HAPUS RIWAYAT
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- SCORE CARDS -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         
         <!-- FITNESS CARD -->
         <div class="bg-cyan-300 p-8 border-4 border-black shadow-[8px_8px_0px_#000] relative overflow-hidden">
@@ -67,6 +137,23 @@
         </div>
     </div>
 
+    <!-- GRAFIK PERKEMBANGAN NILAI FITNESS (FR-06) -->
+    {% if fitness_history %}
+    <div class="bg-white border-4 border-black shadow-[12px_12px_0px_#000] mb-10">
+        <div class="px-6 py-4 border-b-4 border-black bg-pink-300 flex flex-wrap justify-between items-center gap-2">
+            <h3 class="font-black text-xl uppercase flex items-center gap-2">
+                <i class="ph-bold ph-trend-up text-2xl"></i> GRAFIK PERKEMBANGAN NILAI FITNESS
+            </h3>
+            <span class="bg-black text-white px-3 py-1 text-xs font-black uppercase">{{ fitness_history|length }} GENERASI</span>
+        </div>
+        <div class="p-6 bg-white">
+            <div class="h-72 w-full">
+                <canvas id="fitnessChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- MODAL ERROR -->
     {% if conflicts > 0 %}
     <div x-show="showModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -80,7 +167,7 @@
                     <h3 class="text-2xl font-black uppercase flex items-center gap-2"><i class="ph-bold ph-warning-circle"></i> DAFTAR KONFLIK</h3>
                     <p class="bg-black text-white inline-block px-2 py-0.5 text-sm font-bold mt-1">{{ conflicts }} MASALAH</p>
                 </div>
-                <button @click="showModal = false" class="text-3xl font-black hover:scale-125"><i class="ph-bold ph-x"></i></button>
+                <button type="button" @click="showModal = false" class="text-3xl font-black hover:scale-125"><i class="ph-bold ph-x"></i></button>
             </div>
 
             <div class="p-6 overflow-y-auto bg-yellow-100">
@@ -93,6 +180,7 @@
                             {% elif 'RUANGAN' in log %} bg-orange-300
                             {% elif 'KAPASITAS' in log %} bg-yellow-300
                             {% elif 'SALAH RUANG' in log %} bg-purple-300
+                            {% elif 'WAKTU TIDAK BISA' in log %} bg-cyan-300
                             {% else %} bg-gray-300 {% endif %}">
                             !
                         </div>
@@ -114,7 +202,7 @@
             </div>
 
             <div class="bg-white p-4 border-t-4 border-black flex justify-end">
-                <button @click="showModal = false" class="bg-black text-white px-8 py-3 font-black uppercase hover:bg-gray-800 active:translate-y-1">TUTUP</button>
+                <button type="button" @click="showModal = false" class="bg-black text-white px-8 py-3 font-black uppercase hover:bg-gray-800 active:translate-y-1">TUTUP</button>
             </div>
         </div>
     </div>
@@ -187,15 +275,78 @@
         </div>
     </div>
 
+    {% endif %}
 </div>
 
+{% if schedule %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.getElementById('searchBox').addEventListener('keyup', function() {
-        let filter = this.value.toUpperCase();
-        let rows = document.querySelectorAll('#scheduleBody tr');
-        rows.forEach(row => {
-            row.style.display = row.innerText.toUpperCase().includes(filter) ? '' : 'none';
+    const searchInput = document.getElementById('searchBox');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            let filter = this.value.toUpperCase();
+            let rows = document.querySelectorAll('#scheduleBody tr');
+            rows.forEach(row => {
+                row.style.display = row.innerText.toUpperCase().includes(filter) ? '' : 'none';
+            });
         });
-    });
+    }
+
+    const fitnessHistory = {{ fitness_history|default([])|tojson }};
+    const chartEl = document.getElementById('fitnessChart');
+    if (chartEl && fitnessHistory.length > 0 && typeof Chart !== 'undefined') {
+        new Chart(chartEl.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: fitnessHistory.map(item => 'Gen ' + item.gen),
+                datasets: [
+                    {
+                        label: 'Best Fitness',
+                        data: fitnessHistory.map(item => item.best),
+                        borderColor: '#000000',
+                        backgroundColor: '#22d3ee',
+                        borderWidth: 4,
+                        pointRadius: fitnessHistory.length > 50 ? 0 : 3,
+                        tension: 0.2,
+                        fill: false
+                    },
+                    {
+                        label: 'Average Fitness',
+                        data: fitnessHistory.map(item => item.avg),
+                        borderColor: '#ec4899',
+                        backgroundColor: '#f9a8d4',
+                        borderWidth: 3,
+                        borderDash: [6, 4],
+                        pointRadius: 0,
+                        tension: 0.2,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#000000',
+                            font: { family: 'Public Sans', weight: '900', size: 13 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#000000', font: { family: 'Public Sans', weight: '700' }, maxTicksLimit: 12 },
+                        grid: { color: 'rgba(0,0,0,0.15)' }
+                    },
+                    y: {
+                        ticks: { color: '#000000', font: { family: 'Public Sans', weight: '700' } },
+                        grid: { color: 'rgba(0,0,0,0.15)' }
+                    }
+                }
+            }
+        });
+    }
 </script>
+{% endif %}
 {% endblock %}
